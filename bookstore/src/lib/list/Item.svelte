@@ -22,10 +22,6 @@
     align-items: flex-start;
   }
 
-  .item + .item {
-    margin-top: 8px;
-  }
-
   .image {
     width: 48px;
     height: 48px;

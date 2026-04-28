@@ -2,72 +2,92 @@
   import Item from '$lib/list/Item.svelte';
   import AppModal from '$lib/modal/AppModal.svelte';
   import ClientForm from '$lib/clients/ClientForm.svelte';
+  import SearchBox from '$lib/search/SearchBox.svelte';
 
   let clientes = $state([
     {
       id: 1,
-      nif: '12345678A',
       name: 'Juan Pérez',
+      nif: '12345678A',
       phone: 600123123,
       address: 'Calle Mayor 1'
     },
     {
       id: 2,
-      nif: '87654321B',
       name: 'María López',
+      nif: '87654321B',
       phone: 699888777,
       address: 'Av. Andalucía 23'
+    },
+    {
+      id: 3,
+      name: 'Carlos Gómez',
+      nif: '11223344C',
+      phone: 611223344,
+      address: 'Calle Granada 12'
     }
   ]);
 
   let clienteSeleccionado = $state(null);
+  let search = $state('');
+
+  function clienteCoincide(cliente) {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+
+    return (
+      cliente.name.toLowerCase().includes(q) ||
+      cliente.nif.toLowerCase().includes(q)
+    );
+  }
 
   function editar(cliente) {
     clienteSeleccionado = cliente;
   }
 
-  function cerrarModal() {
+  function cerrar() {
     clienteSeleccionado = null;
   }
 
   function guardar() {
     alert('El cliente ha sido editado');
-    cerrarModal();
+    cerrar();
   }
 
   function eliminar() {
     clientes = clientes.filter(
       c => c.id !== clienteSeleccionado.id
     );
-    cerrarModal();
+    cerrar();
   }
 </script>
 
 <h1>Clientes</h1>
 
-{#each clientes as cliente}
+<SearchBox
+  value={search}
+  placeholder="Buscar por nombre o NIF..."
+  onChange={(v) => search = v}
+/>
+
+{#if clientes.filter(clienteCoincide).length === 0}
+  <p>No se encontraron clientes.</p>
+{/if}
+
+{#each clientes.filter(clienteCoincide) as cliente}
   <Item>
-    <!-- IMAGE -->
     <div slot="image">
-      <div class="avatar">
-        {cliente.name.charAt(0)}
-      </div>
+      <div class="avatar">{cliente.name[0]}</div>
     </div>
 
-    <!-- CONTENT -->
     <div slot="content">
-      <div class="header">
-        <div class="title">{cliente.name}</div>
-        <div class="subtitle">{cliente.nif}</div>
-      </div>
-
+      <div class="title">{cliente.name}</div>
+      <div class="subtitle">{cliente.nif}</div>
       <div class="detail">
-        Tel: {cliente.phone} |
-        Dir: {cliente.address}
+        Tel: {cliente.phone} | Dir: {cliente.address}
       </div>
     </div>
 
-    <!-- ACTIONS -->
     <div slot="actions">
       <button type="button" onclick={() => editar(cliente)}>
         Editar
@@ -81,28 +101,23 @@
     title="Editar cliente"
     onSave={guardar}
     onDelete={eliminar}
-    onCancel={cerrarModal}
+    onCancel={cerrar}
   >
     <ClientForm client={clienteSeleccionado} />
   </AppModal>
 {/if}
 
 <style>
-  /* Avatar simple para clientes */
   .avatar {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
     background: #2c3e50;
     color: white;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-  }
-
-  .header {
-    margin-bottom: 6px;
   }
 
   .title {

@@ -2,10 +2,12 @@
   import Item from '$lib/list/Item.svelte';
   import AppModal from '$lib/modal/AppModal.svelte';
   import ProductForm from '$lib/products/ProductForm.svelte';
+  import SearchBox from '$lib/search/SearchBox.svelte';
 
   let productos = $state([
     {
       id: 1,
+      code: 'P001',
       name: 'Libro Svelte',
       categoryName: 'Programación',
       price: 20,
@@ -14,58 +16,99 @@
     },
     {
       id: 2,
+      code: 'P002',
       name: 'Libro .NET',
       categoryName: 'Backend',
       price: 25,
       quantity: 3,
       cost: 12
+    },
+    {
+      id: 3,
+      code: 'P003',
+      name: 'JavaScript Moderno',
+      categoryName: 'Frontend',
+      price: 18,
+      quantity: 8,
+      cost: 9
+    },
+    {
+      id: 4,
+      code: 'BK-REACT',
+      name: 'Aprendiendo React',
+      categoryName: 'Frontend',
+      price: 22,
+      quantity: 4,
+      cost: 11
+    },
+    {
+      id: 5,
+      code: 'ALG-001',
+      name: 'Algoritmos y Estructuras de Datos',
+      categoryName: 'Ciencias de la Computación',
+      price: 30,
+      quantity: 2,
+      cost: 15
     }
   ]);
 
   let productoSeleccionado = $state(null);
+  let search = $state('');
+
+  function productoCoincide(producto) {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+
+    return (
+      producto.name.toLowerCase().includes(q) ||
+      producto.code.toLowerCase().includes(q)
+    );
+  }
 
   function editar(producto) {
     productoSeleccionado = producto;
   }
 
-  function cerrarModal() {
+  function cerrar() {
     productoSeleccionado = null;
   }
 
   function guardar() {
     alert('El producto ha sido editado');
-    cerrarModal();
+    cerrar();
   }
 
   function eliminar() {
     productos = productos.filter(
       p => p.id !== productoSeleccionado.id
     );
-    cerrarModal();
+    cerrar();
   }
 </script>
 
 <h1>Productos</h1>
 
-{#each productos as producto}
+<SearchBox
+  value={search}
+  placeholder="Buscar por nombre o código..."
+  onChange={(v) => search = v}
+/>
+
+{#if productos.filter(productoCoincide).length === 0}
+  <p>No se encontraron productos.</p>
+{/if}
+
+{#each productos.filter(productoCoincide) as producto}
   <Item>
-    <!-- IMAGE -->
     <div slot="image">
-      <img
-        src="/svelte-logo.svg"
-        alt="Producto"
-        width="40"
-        height="40"
-      />
+      <img src="/svelte-logo.svg" alt="Producto" width="40" />
     </div>
 
-    <!-- CONTENT -->
     <div slot="content">
-      <div class="header">
-        <div class="title">{producto.name}</div>
-        <div class="subtitle">{producto.categoryName}</div>
+      <div class="title">{producto.name}</div>
+      <div class="subtitle">
+        Código: {producto.code} · {producto.categoryName}
       </div>
-
       <div class="detail">
         Precio ${producto.price} |
         Cantidad {producto.quantity} |
@@ -73,7 +116,6 @@
       </div>
     </div>
 
-    <!-- ACTIONS -->
     <div slot="actions">
       <button type="button" onclick={() => editar(producto)}>
         Editar
@@ -90,17 +132,13 @@
     title="Editar producto"
     onSave={guardar}
     onDelete={eliminar}
-    onCancel={cerrarModal}
+    onCancel={cerrar}
   >
     <ProductForm product={productoSeleccionado} />
   </AppModal>
 {/if}
 
 <style>
-  .header {
-    margin-bottom: 6px;
-  }
-
   .title {
     font-weight: bold;
   }
