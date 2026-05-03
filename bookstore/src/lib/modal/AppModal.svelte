@@ -20,9 +20,11 @@
       class="actions"
       class:align-right={actionsAlign === 'right'}
     >
-      <button type="button" onclick={onSave}>
-        Guardar
-      </button>
+      {#if onSave}
+        <button type="button" onclick={onSave}>
+          Guardar
+        </button>
+      {/if}
 
       {#if onDelete}
         <button

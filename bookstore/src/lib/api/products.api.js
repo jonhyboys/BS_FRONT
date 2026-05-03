@@ -6,6 +6,18 @@ export async function getProducts(page = 1) {
   return await res.json();
 }
 
+export async function getProductById(id) {
+  const res = await fetch(`${BASE_URL}/${id}`);
+  if (!res.ok) throw new Error('Error al obtener producto');
+  return await res.json();
+}
+
+export async function getProductByCode(code) {
+  const res = await fetch(`${BASE_URL}/code/${code}`);
+  if (!res.ok) throw new Error('Error al obtener producto');
+  return await res.json();
+}
+
 export async function searchProducts(query, page = 1) {
   const encoded = encodeURIComponent(query);
   const res = await fetch(`${BASE_URL}/query/${encoded}?page=${page}`);

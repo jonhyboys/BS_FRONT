@@ -1,5 +1,5 @@
 <script>
-  const { sale } = $props();
+  let { sale, onTicket, onInvoice } = $props();
 
   let expanded = $state(false);
 
@@ -9,6 +9,18 @@
 
   function formatDate(date) {
     return new Date(date).toLocaleString();
+  }
+
+  function handleTicketClick() {
+    if (onTicket) {
+      onTicket(sale);
+    }
+  }
+
+  function handleInvoiceClick() {
+    if (onInvoice) {
+      onInvoice(sale);
+    }
   }
 </script>
 
@@ -45,8 +57,8 @@
 
     <!-- ACTIONS -->
     <div class="actions">
-      <button type="button">Factura</button>
-      <button type="button">Ticket</button>
+      <button type="button" onclick={handleInvoiceClick}>Factura</button>
+      <button type="button" onclick={handleTicketClick}>Ticket</button>
     </div>
   </div>
 
