@@ -4,81 +4,141 @@
   import ClientForm from '$lib/clients/ClientForm.svelte';
   import SearchBox from '$lib/search/SearchBox.svelte';
 
-  let clientes = $state([
-    {
-      id: 1,
-      name: 'Juan Pérez',
-      nif: '12345678A',
-      phone: 600123123,
-      address: 'Calle Mayor 1'
-    },
-    {
-      id: 2,
-      name: 'María López',
-      nif: '87654321B',
-      phone: 699888777,
-      address: 'Av. Andalucía 23'
-    },
-    {
-      id: 3,
-      name: 'Carlos Gómez',
-      nif: '11223344C',
-      phone: 611223344,
-      address: 'Calle Granada 12'
-    }
-  ]);
+  import {
+    getClients,
+    searchClientsByName,
+    createClient,
+    updateClient,
+    deleteClient
+  } from '$lib/api/clients.api.js';
 
+  let clientes = $state([]);
   let clienteSeleccionado = $state(null);
+  let errores = $state({});
+
   let search = $state('');
+  let loading = $state(false);
+  let error = $state(null);
+  let searchTimeout;
 
-  function clienteCoincide(cliente) {
-    const q = search.trim().toLowerCase();
-    if (!q) return true;
+  // =======================
+  // LOAD CLIENTS
+  // =======================
+  async function loadClients() {
+    loading = true;
+    error = null;
 
-    return (
-      cliente.name.toLowerCase().includes(q) ||
-      cliente.nif.toLowerCase().includes(q)
-    );
+    try {
+      clientes = await getClients();
+    } finally {
+      loading = false;
+    }
+  }
+
+  loadClients();
+
+  // =======================
+  // SEARCH
+  // =======================
+  function handleSearch(value) {
+    search = value;
+    clearTimeout(searchTimeout);
+
+    searchTimeout = setTimeout(async () => {
+      const cleaned = value.trim().replace(/[^a-zA-Z0-9]/g, '');
+
+      if (cleaned.length === 0) {
+        loadClients();
+        return;
+      }
+
+      if (cleaned.length < 3) return;
+
+      loading = true;
+      try {
+        clientes = await searchClientsByName(value);
+      } finally {
+        loading = false;
+      }
+    }, 200);
+  }
+
+  // =======================
+  // ACTIONS
+  // =======================
+  function nuevo() {
+    errores = {};
+    clienteSeleccionado = {
+      name: '',
+      nif: '',
+      phone: '',
+      address: ''
+    };
   }
 
   function editar(cliente) {
-    clienteSeleccionado = cliente;
+    errores = {};
+    clienteSeleccionado = { ...cliente };
   }
 
-  function cerrar() {
+  function cerrarModal() {
     clienteSeleccionado = null;
+    errores = {};
   }
 
-  function guardar() {
-    alert('El cliente ha sido editado');
-    cerrar();
+  function validarCliente(c) {
+    const e = {};
+    if (!c.name?.trim()) e.name = 'El nombre es obligatorio';
+    if (!c.nif?.trim()) e.nif = 'El NIF es obligatorio';
+    return e;
   }
 
-  function eliminar() {
-    clientes = clientes.filter(
-      c => c.id !== clienteSeleccionado.id
-    );
-    cerrar();
+  async function guardar() {
+    const e = validarCliente(clienteSeleccionado);
+    errores = e;
+
+    if (Object.keys(e).length > 0) return;
+
+    if (clienteSeleccionado.id) {
+      await updateClient(clienteSeleccionado);
+    } else {
+      await createClient(clienteSeleccionado);
+    }
+
+    cerrarModal();
+    loadClients();
+  }
+
+  async function eliminar(cliente) {
+    if (!confirm('¿Eliminar este cliente?')) return;
+    await deleteClient(cliente.id);
+    loadClients();
   }
 </script>
 
-<h1>Clientes</h1>
+<!-- HEADER -->
+<div class="page-header">
+  <h1>Clientes</h1>
+  <button onclick={nuevo}>Nuevo cliente</button>
+</div>
 
 <SearchBox
   value={search}
-  placeholder="Buscar por nombre o NIF..."
-  onChange={(v) => search = v}
+  placeholder="Buscar cliente..."
+  onChange={handleSearch}
 />
 
-{#if clientes.filter(clienteCoincide).length === 0}
-  <p>No se encontraron clientes.</p>
+{#if loading}
+  <p>Cargando clientes…</p>
 {/if}
 
-{#each clientes.filter(clienteCoincide) as cliente}
+{#if error}
+  <p class="error">{error}</p>
+{/if}
+
+{#each clientes as cliente}
   <Item>
-    <div slot="image">
-      <div class="avatar">{cliente.name[0]}</div>
-    </div>
+    <div slot="image">👤</div>
 
     <div slot="content">
       <div class="title">{cliente.name}</div>
@@ -89,52 +149,36 @@
     </div>
 
     <div slot="actions">
-      <button type="button" onclick={() => editar(cliente)}>
-        Editar
-      </button>
+      <button onclick={() => editar(cliente)}>Editar</button>
+      <button onclick={() => eliminar(cliente)}>Eliminar</button>
     </div>
   </Item>
 {/each}
 
 {#if clienteSeleccionado}
   <AppModal
-    title="Editar cliente"
+    title={clienteSeleccionado.id ? 'Editar cliente' : 'Nuevo cliente'}
     onSave={guardar}
-    onDelete={eliminar}
-    onCancel={cerrar}
+    onCancel={cerrarModal}
+    actionsAlign="right"
   >
-    <ClientForm client={clienteSeleccionado} />
+    <ClientForm
+      key={clienteSeleccionado.id ?? 'new'}
+      client={clienteSeleccionado}
+      errors={errores}
+      onChange={(c) => (clienteSeleccionado = c)}
+    />
   </AppModal>
 {/if}
 
 <style>
-  .avatar {
-    width: 40px;
-    height: 40px;
-    background: #2c3e50;
-    color: white;
-    border-radius: 50%;
+  .page-header {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
+    justify-content: space-between;
+    margin-bottom: 10px;
   }
 
-  .title {
-    font-weight: bold;
-  }
-
-  .subtitle {
-    font-size: 0.85em;
-    color: #666;
-  }
-
-  .detail {
-    font-size: 0.85em;
-    color: #444;
-  }
-
-  button {
-    padding: 4px 8px;
+  .error {
+    color: red;
   }
 </style>

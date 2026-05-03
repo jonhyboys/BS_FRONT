@@ -4,105 +4,152 @@
   import ProductForm from '$lib/products/ProductForm.svelte';
   import SearchBox from '$lib/search/SearchBox.svelte';
 
-  let productos = $state([
-    {
-      id: 1,
-      code: 'P001',
-      name: 'Libro Svelte',
-      categoryName: 'Programación',
-      price: 20,
-      quantity: 5,
-      cost: 10
-    },
-    {
-      id: 2,
-      code: 'P002',
-      name: 'Libro .NET',
-      categoryName: 'Backend',
-      price: 25,
-      quantity: 3,
-      cost: 12
-    },
-    {
-      id: 3,
-      code: 'P003',
-      name: 'JavaScript Moderno',
-      categoryName: 'Frontend',
-      price: 18,
-      quantity: 8,
-      cost: 9
-    },
-    {
-      id: 4,
-      code: 'BK-REACT',
-      name: 'Aprendiendo React',
-      categoryName: 'Frontend',
-      price: 22,
-      quantity: 4,
-      cost: 11
-    },
-    {
-      id: 5,
-      code: 'ALG-001',
-      name: 'Algoritmos y Estructuras de Datos',
-      categoryName: 'Ciencias de la Computación',
-      price: 30,
-      quantity: 2,
-      cost: 15
-    }
-  ]);
+  import {
+    getProducts,
+    searchProducts,
+    createProduct,
+    updateProduct,
+    deleteProduct
+  } from '$lib/api/products.api.js';
 
+  let productos = $state([]);
   let productoSeleccionado = $state(null);
+  let errores = $state({});
+
   let search = $state('');
+  let loading = $state(false);
+  let error = $state(null);
+  let searchTimeout;
 
-  function productoCoincide(producto) {
-    const q = search.trim().toLowerCase();
-    if (!q) return true;
+  // =======================
+  // LOAD PRODUCTS
+  // =======================
+  async function loadProducts() {
+    loading = true;
+    error = null;
 
-    return (
-      producto.name.toLowerCase().includes(q) ||
-      producto.code.toLowerCase().includes(q)
-    );
+    try {
+      const data = await getProducts(1);
+      productos = data.map(p => ({
+        ...p,
+        category: p.categoryId
+      }));
+    } finally {
+      loading = false;
+    }
+  }
+
+  loadProducts();
+
+  // =======================
+  // SEARCH
+  // =======================
+  function handleSearch(value) {
+    search = value;
+    clearTimeout(searchTimeout);
+
+    searchTimeout = setTimeout(async () => {
+      const cleaned = value.trim().replace(/[^a-zA-Z0-9]/g, '');
+
+      if (cleaned.length === 0) {
+        loadProducts();
+        return;
+      }
+
+      if (cleaned.length < 3) return;
+
+      loading = true;
+      try {
+        const data = await searchProducts(value, 1);
+        productos = data.map(p => ({
+          ...p,
+          category: p.categoryId
+        }));
+      } finally {
+        loading = false;
+      }
+    }, 200);
+  }
+
+  // =======================
+  // ACTIONS
+  // =======================
+  function nuevo() {
+    errores = {};
+    productoSeleccionado = {
+      code: '',
+      name: '',
+      category: null,
+      cost: 0,
+      price: 0,
+      promotion: 0,
+      quantity: 0,
+      iva: 21
+    };
   }
 
   function editar(producto) {
-    productoSeleccionado = producto;
+    errores = {};
+    productoSeleccionado = { ...producto };
   }
 
-  function cerrar() {
+  function cerrarModal() {
     productoSeleccionado = null;
+    errores = {};
   }
 
-  function guardar() {
-    alert('El producto ha sido editado');
-    cerrar();
+  function validar(p) {
+    const e = {};
+    if (!p.code?.trim()) e.code = 'El código es obligatorio';
+    if (!p.name?.trim()) e.name = 'El nombre es obligatorio';
+    if (!p.category) e.category = 'Debe seleccionar una categoría';
+    return e;
   }
 
-  function eliminar() {
-    productos = productos.filter(
-      p => p.id !== productoSeleccionado.id
-    );
-    cerrar();
+  async function guardar() {
+    const e = validar(productoSeleccionado);
+    errores = e;
+    if (Object.keys(e).length > 0) return;
+
+    if (productoSeleccionado.id) {
+      await updateProduct(productoSeleccionado);
+    } else {
+      await createProduct(productoSeleccionado);
+    }
+
+    cerrarModal();
+    loadProducts();
+  }
+
+  async function eliminar(producto) {
+    if (!confirm('¿Eliminar este producto?')) return;
+    await deleteProduct(producto.id);
+    loadProducts();
   }
 </script>
 
-<h1>Productos</h1>
+<div class="page-header">
+  <h1>Productos</h1>
+  <button onclick={nuevo}>Nuevo producto</button>
+</div>
 
 <SearchBox
   value={search}
   placeholder="Buscar por nombre o código..."
-  onChange={(v) => search = v}
+  onChange={handleSearch}
 />
 
-{#if productos.filter(productoCoincide).length === 0}
-  <p>No se encontraron productos.</p>
+{#if loading}
+  <p>Cargando productos…</p>
 {/if}
 
-{#each productos.filter(productoCoincide) as producto}
+{#if error}
+  <p class="error">{error}</p>
+{/if}
+
+{#each productos as producto}
   <Item>
-    <div slot="image">
-      <img src="/svelte-logo.svg" alt="Producto" width="40" />
-    </div>
+    <div slot="image">/svelte-logo.svg</div>
 
     <div slot="content">
       <div class="title">{producto.name}</div>
@@ -117,43 +164,46 @@
     </div>
 
     <div slot="actions">
-      <button type="button" onclick={() => editar(producto)}>
-        Editar
-      </button>
-      <button type="button" disabled>
-        Vender
-      </button>
+      <button onclick={() => editar(producto)}>Editar</button>
+      <button onclick={() => eliminar(producto)}>Eliminar</button>
     </div>
   </Item>
 {/each}
 
 {#if productoSeleccionado}
   <AppModal
-    title="Editar producto"
+    title={productoSeleccionado.id ? 'Editar producto' : 'Nuevo producto'}
     onSave={guardar}
-    onDelete={eliminar}
-    onCancel={cerrar}
+    onCancel={cerrarModal}
+    actionsAlign="right"
   >
-    <ProductForm product={productoSeleccionado} />
+    <ProductForm
+      key={productoSeleccionado.id ?? 'new'}
+      product={productoSeleccionado}
+      errors={errores}
+      onChange={(p) => (productoSeleccionado = p)}
+    />
   </AppModal>
 {/if}
 
 <style>
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
   .title {
     font-weight: bold;
   }
-
   .subtitle {
     font-size: 0.85em;
     color: #666;
   }
-
   .detail {
     font-size: 0.85em;
     color: #444;
   }
-
-  button {
-    padding: 4px 8px;
+  .error {
+    color: red;
   }
 </style>

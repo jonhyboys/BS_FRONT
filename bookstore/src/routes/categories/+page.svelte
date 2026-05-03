@@ -4,114 +4,183 @@
   import CategoryForm from '$lib/categories/CategoryForm.svelte';
   import SearchBox from '$lib/search/SearchBox.svelte';
 
-  let categorias = $state([
-    {
-      id: 1,
-      name: 'Programación',
-      motherCategory: 0,
-      motherCategoryName: '—'
-    },
-    {
-      id: 2,
-      name: 'Frontend',
-      motherCategory: 1,
-      motherCategoryName: 'Programación'
-    },
-    {
-      id: 3,
-      name: 'Backend',
-      motherCategory: 1,
-      motherCategoryName: 'Programación'
-    },
-    {
-      id: 4,
-      name: 'Bases de Datos',
-      motherCategory: 1,
-      motherCategoryName: 'Programación'
-    }
-  ]);
+  import {
+    getCategories,
+    searchCategoriesByName,
+    createCategory,
+    updateCategory,
+    deleteCategory
+  } from '$lib/api/categories.api.js';
 
+  let categorias = $state([]);
   let categoriaSeleccionada = $state(null);
+  let errores = $state({});
+
   let search = $state('');
+  let loading = $state(false);
+  let error = $state(null);
+  let searchTimeout;
 
-  function categoriaCoincide(cat) {
-    const q = search.trim().toLowerCase();
-    if (!q) return true;
+  // =======================
+  // LOAD
+  // =======================
+  async function loadCategories() {
+    loading = true;
+    error = null;
+    try {
+      categorias = await getCategories();
+    } catch (e) {
+      error = e.message;
+    } finally {
+      loading = false;
+    }
+  }
 
-    return (
-      cat.name.toLowerCase().includes(q) ||
-      cat.motherCategoryName.toLowerCase().includes(q)
-    );
+  loadCategories();
+
+  // =======================
+  // SEARCH (igual que Productos / Clientes)
+  // =======================
+  function handleSearch(value) {
+    search = value;
+    clearTimeout(searchTimeout);
+
+    searchTimeout = setTimeout(async () => {
+      const cleaned = value.trim();
+
+      if (cleaned.length === 0) {
+        loadCategories();
+        return;
+      }
+
+      if (cleaned.length < 3) return;
+
+      loading = true;
+      error = null;
+
+      try {
+        categorias = await searchCategoriesByName(value);
+      } catch (e) {
+        error = e.message;
+      } finally {
+        loading = false;
+      }
+    }, 200);
+  }
+
+  // =======================
+  // ACTIONS
+  // =======================
+  function nuevo() {
+    errores = {};
+    categoriaSeleccionada = {
+      name: '',
+      motherCategoryId: null
+    };
   }
 
   function editar(categoria) {
-    categoriaSeleccionada = categoria;
+    errores = {};
+    categoriaSeleccionada = { ...categoria };
   }
 
-  function cerrar() {
+  function cerrarModal() {
     categoriaSeleccionada = null;
+    errores = {};
   }
 
-  function guardar() {
-    alert('La categoría ha sido editada');
-    cerrar();
+  function validarCategoria(c) {
+    const e = {};
+    if (!c.name || c.name.trim() === '') {
+      e.name = 'El nombre de la categoría es obligatorio';
+    }
+    return e;
   }
 
-  function eliminar() {
-    categorias = categorias.filter(
-      c => c.id !== categoriaSeleccionada.id
-    );
-    cerrar();
+  async function guardar() {
+    const e = validarCategoria(categoriaSeleccionada);
+    errores = e;
+
+    if (Object.keys(e).length > 0) return;
+
+    if (categoriaSeleccionada.id) {
+      await updateCategory(categoriaSeleccionada);
+    } else {
+      await createCategory(categoriaSeleccionada);
+    }
+
+    cerrarModal();
+    loadCategories();
+  }
+
+  async function eliminar(categoria) {
+    if (!confirm('¿Eliminar esta categoría?')) return;
+    await deleteCategory(categoria.id);
+    loadCategories();
   }
 </script>
 
-<h1>Categorías</h1>
+<!-- HEADER -->
+<div class="page-header">
+  <h1>Categorías</h1>
+  <button onclick={nuevo}>Nueva categoría</button>
+</div>
 
+<!-- ✅ BUSCADOR RESTAURADO -->
 <SearchBox
   value={search}
-  placeholder="Buscar por nombre de categoría..."
-  onChange={(v) => search = v}
+  placeholder="Buscar categoría..."
+  onChange={handleSearch}
 />
 
-{#if categorias.filter(categoriaCoincide).length === 0}
-  <p>No se encontraron categorías.</p>
+{#if loading}
+  <p>Cargando categorías…</p>
 {/if}
 
-{#each categorias.filter(categoriaCoincide) as categoria}
+{#if error}
+  <p class="error">{error}</p>
+{/if}
+
+{#each categorias as categoria}
   <Item>
-    <div slot="image">
-      <span class="icon">📂</span>
-    </div>
+    <div slot="image">📂</div>
 
     <div slot="content">
       <div class="title">{categoria.name}</div>
       <div class="detail">
-        Categoría madre: {categoria.motherCategoryName}
+        Categoría padre: {categoria.motherCategoryName ?? '—'}
       </div>
     </div>
 
     <div slot="actions">
-      <button type="button" onclick={() => editar(categoria)}>
-        Editar
-      </button>
+      <button onclick={() => editar(categoria)}>Editar</button>
+      <button onclick={() => eliminar(categoria)}>Eliminar</button>
     </div>
   </Item>
 {/each}
 
 {#if categoriaSeleccionada}
   <AppModal
-    title="Editar categoría"
+    title={categoriaSeleccionada.id ? 'Editar categoría' : 'Nueva categoría'}
     onSave={guardar}
-    onDelete={eliminar}
-    onCancel={cerrar}
+    onCancel={cerrarModal}
+    actionsAlign="right"
   >
-    <CategoryForm category={categoriaSeleccionada} />
+    <CategoryForm
+      key={categoriaSeleccionada.id ?? 'new'}
+      category={categoriaSeleccionada}
+      categories={categorias}
+      errors={errores}
+      onChange={(c) => (categoriaSeleccionada = c)}
+    />
   </AppModal>
 {/if}
 
 <style>
-  .icon {
-    font-size: 20px;
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
   }
 
   .title {
@@ -123,7 +192,7 @@
     color: #444;
   }
 
-  button {
-    padding: 4px 8px;
+  .error {
+    color: red;
   }
 </style>

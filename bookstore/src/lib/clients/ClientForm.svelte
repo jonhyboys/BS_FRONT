@@ -1,48 +1,66 @@
 <script>
-  const { client } = $props();
+  const { client, onChange, errors = {} } = $props();
 
-  // Estado local editable
-  let form = $state({});
-
-  // Sincronizar cada vez que cambia el cliente
-  $effect(() => {
-    form = { ...client };
+  let form = $state({
+    name: '',
+    nif: '',
+    phone: '',
+    address: ''
   });
+
+  $effect(() => {
+    if (!client) return;
+
+    form.name = client.name ?? '';
+    form.nif = client.nif ?? '';
+    form.phone = client.phone ?? '';
+    form.address = client.address ?? '';
+  });
+
+  function emitirCambios() {
+    onChange({
+      ...client,
+      name: form.name,
+      nif: form.nif,
+      phone: form.phone,
+      address: form.address
+    });
+  }
 </script>
 
-<label>
-  Id
-  <input type="text" value={form.id} readonly />
-</label>
+<div class="form">
+  <label>
+    Nombre
+    <input bind:value={form.name} oninput={emitirCambios} />
+    {#if errors.name}<span class="error">{errors.name}</span>{/if}
+  </label>
 
-<label>
-  NIF
-  <input type="text" bind:value={form.nif} />
-</label>
+  <label>
+    NIF
+    <input bind:value={form.nif} oninput={emitirCambios} />
+    {#if errors.nif}<span class="error">{errors.nif}</span>{/if}
+  </label>
 
-<label>
-  Nombre
-  <input type="text" bind:value={form.name} />
-</label>
+  <label>
+    Teléfono
+    <input bind:value={form.phone} oninput={emitirCambios} />
+  </label>
 
-<label>
-  Teléfono
-  <input type="number" bind:value={form.phone} />
-</label>
-
-<label>
-  Dirección
-  <input type="text" bind:value={form.address} />
-</label>
+  <label>
+    Dirección
+    <input bind:value={form.address} oninput={emitirCambios} />
+  </label>
+</div>
 
 <style>
-  label {
-    display: block;
-    margin-bottom: 8px;
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 
-  input {
-    width: 100%;
-    box-sizing: border-box;
+  .error {
+    color: red;
+    font-size: 0.8em;
   }
 </style>

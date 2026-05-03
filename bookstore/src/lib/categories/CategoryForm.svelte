@@ -1,37 +1,64 @@
 <script>
-  const { category } = $props();
+  const { category, categories = [], onChange, errors = {} } = $props();
 
-  let form = $state({});
-
-  // Sincronizamos cada vez que cambia la categoría
-  $effect(() => {
-    form = { ...category };
+  let form = $state({
+    name: '',
+    motherCategoryId: ''
   });
+
+  $effect(() => {
+    if (!category) return;
+
+    form.name = category.name ?? '';
+    form.motherCategoryId =
+      category.motherCategoryId != null
+        ? String(category.motherCategoryId)
+        : '';
+  });
+
+  function emitirCambios() {
+    onChange({
+      ...category,
+      name: form.name,
+      motherCategoryId:
+        form.motherCategoryId !== ''
+          ? Number(form.motherCategoryId)
+          : null
+    });
+  }
 </script>
 
-<label>
-  Id
-  <input type="text" value={form.id} readonly />
-</label>
+<div class="form">
+  <label>
+    Nombre
+    <input bind:value={form.name} oninput={emitirCambios} />
+    {#if errors.name}
+      <span class="error">{errors.name}</span>
+    {/if}
+  </label>
 
-<label>
-  Nombre
-  <input type="text" bind:value={form.name} />
-</label>
-
-<label>
-  Categoría madre
-  <input type="text" bind:value={form.motherCategoryName} />
-</label>
+  <label>
+    Categoría padre
+    <select bind:value={form.motherCategoryId} onchange={emitirCambios}>
+      <option value="">— Sin categoría padre —</option>
+      {#each categories as c}
+        {#if !category.id || c.id !== category.id}
+          <option value={String(c.id)}>{c.name}</option>
+        {/if}
+      {/each}
+    </select>
+  </label>
+</div>
 
 <style>
-  label {
-    display: block;
-    margin-bottom: 8px;
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 
-  input {
-    width: 100%;
-    box-sizing: border-box;
+  .error {
+    color: red;
+    font-size: 0.8em;
   }
 </style>

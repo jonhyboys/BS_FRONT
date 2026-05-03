@@ -1,37 +1,38 @@
 <script>
   const {
     title,
-    children,
     onSave,
+    onCancel,
     onDelete,
-    onCancel
+    actionsAlign = 'right'
   } = $props();
 </script>
 
-<div class="modal-backdrop">
+<div class="overlay">
   <div class="modal">
     <h2>{title}</h2>
 
     <div class="content">
-      {@render children()}
+      <slot />
     </div>
 
-    <div class="buttons">
+    <div
+      class="actions"
+      class:align-right={actionsAlign === 'right'}
+    >
       <button type="button" onclick={onSave}>
         Guardar
       </button>
 
-      <button
-        type="button"
-        class="danger"
-        onclick={() => {
-          if (confirm('¿Está seguro de que desea eliminar este registro?')) {
-            onDelete();
-          }
-        }}
-      >
-        Eliminar
-      </button>
+      {#if onDelete}
+        <button
+          type="button"
+          class="danger"
+          onclick={onDelete}
+        >
+          Eliminar
+        </button>
+      {/if}
 
       <button type="button" onclick={onCancel}>
         Cancelar
@@ -41,38 +42,44 @@
 </div>
 
 <style>
-  .modal-backdrop {
+  .overlay {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 1000;
   }
 
   .modal {
     background: white;
-    padding: 20px;
-    width: 360px;
+    padding: 16px;
     border-radius: 4px;
+    min-width: 320px;
+    max-width: 600px;
   }
 
   .content {
-    margin-top: 12px;
+    margin: 16px 0;
   }
 
-  .buttons {
+  .actions {
     display: flex;
-    justify-content: space-between;
-    margin-top: 16px;
+    gap: 8px;
+  }
+
+  .actions.align-right {
+    justify-content: flex-end;
   }
 
   button {
-    padding: 6px 12px;
+    padding: 6px 10px;
   }
 
   .danger {
     background: #c0392b;
     color: white;
+    border: none;
   }
 </style>
