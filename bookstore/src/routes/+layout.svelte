@@ -1,45 +1,29 @@
 <script>
   import { afterNavigate } from '$app/navigation';
 
-  // Props del layout (RUNES MODE)
   const { children } = $props();
-
-  // Estado reactivo (RUNES MODE)
   let ventasAbierto = $state(false);
 
-  function toggleVentas() {
-    ventasAbierto = !ventasAbierto;
-  }
+  function toggleVentas() { ventasAbierto = !ventasAbierto; }
 
-  // PASO 1: cerrar el submenú al navegar
-  afterNavigate(() => {
-    ventasAbierto = false;
-  });
+  afterNavigate(() => { ventasAbierto = false;});
 </script>
 
 <header>
   <div class="brand">
-    <img src="/svelte-logo.svg" alt="Logo" />
+    <img src="/src/img/Genil.png" alt="Logo" />
     <span>Librería Genil</span>
   </div>
-
   <nav>
     <ul class="menu">
       <li><a href="/">Inicio</a></li>
       <li><a href="/products">Productos</a></li>
       <li><a href="/clients">Clientes</a></li>
       <li><a href="/categories">Categorías</a></li>
-
       <li class="has-submenu">
-        <!-- Ventas NO navega -->
-        <button
-          type="button"
-          class="menu-button"
-          onclick={toggleVentas}
-        >
+        <button type="button" class="menu-button" onclick={toggleVentas}>
           Ventas
         </button>
-
         {#if ventasAbierto}
           <ul class="submenu">
             <li><a href="/sales/selling">Vender</a></li>
@@ -47,7 +31,6 @@
           </ul>
         {/if}
       </li>
-
       <li><a href="/invoices">Facturas</a></li>
     </ul>
   </nav>
@@ -59,73 +42,57 @@
 
 <style>
   header {
+    align-items: center;
     display: flex;
+    padding: 1em;
     justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    border-bottom: 1px solid #ccc;
   }
 
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 18px;
-    font-weight: bold;
-  }
+  .brand { gap: 1em; }
 
-  .brand img {
-    height: 32px;
-  }
+  .brand img { height: 4em; }
+
+  .brand span { 
+    color: #FFF;
+    user-select: none;
+   }
 
   .menu {
-    list-style: none;
     display: flex;
-    gap: 20px;
-    margin: 0;
-    padding: 0;
+    gap: 1em;
   }
 
   .menu a,
   .menu-button {
-    text-decoration: none;
-    color: #333;
     background: none;
     border: none;
+    color: #333;
     cursor: pointer;
+    display: block;
     font: inherit;
+    padding: 1em;
+    text-decoration: none;
   }
 
   .menu a:hover,
   .menu-button:hover {
-    text-decoration: underline;
+    background-color: #333;
+    color: #FFF;
   }
 
-  .has-submenu {
-    position: relative;
-  }
+  .has-submenu { position: relative; }
 
   .submenu {
+    border: 1px solid #BBB;
+    left: 0;
+    min-width: 6em;
+    padding: 0;
     position: absolute;
     top: 100%;
-    left: 0;
-    margin-top: 6px;
-    padding: 8px;
-    list-style: none;
-    border: 1px solid #ccc;
-    background: white;
-    min-width: 140px;
+    z-index: 1;
   }
 
-  .submenu li {
-    margin-bottom: 6px;
-  }
+  .submenu a { padding: .5em; }
 
-  .submenu li:last-child {
-    margin-bottom: 0;
-  }
-
-  main {
-    padding: 20px;
-  }
+  main { padding: 1em; }
 </style>

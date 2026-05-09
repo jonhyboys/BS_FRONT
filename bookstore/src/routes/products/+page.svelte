@@ -90,7 +90,17 @@
 
   function editar(producto) {
     errores = {};
-    productoSeleccionado = { ...producto };
+    productoSeleccionado = {
+      id: producto.id,
+      code: producto.code,
+      name: producto.name,
+      category: producto.category ?? producto.categoryId,
+      cost: producto.cost,
+      price: producto.price,
+      promotion: producto.promotion,
+      quantity: producto.quantity,
+      iva: producto.iva
+    };
   }
 
   function cerrarModal() {
@@ -111,10 +121,23 @@
     errores = e;
     if (Object.keys(e).length > 0) return;
 
+    // Construir objeto con solo los campos que espera el backend
+    const productoParaEnviar = {
+      id: productoSeleccionado.id,
+      code: productoSeleccionado.code,
+      name: productoSeleccionado.name,
+      category: Number(productoSeleccionado.category),
+      cost: Number(productoSeleccionado.cost) ?? 0,
+      price: Number(productoSeleccionado.price) ?? 0,
+      promotion: Number(productoSeleccionado.promotion) ?? 0,
+      quantity: Number(productoSeleccionado.quantity) ?? 0,
+      iva: Number(productoSeleccionado.iva) ?? 0
+    };
+
     if (productoSeleccionado.id) {
-      await updateProduct(productoSeleccionado);
+      await updateProduct(productoParaEnviar);
     } else {
-      await createProduct(productoSeleccionado);
+      await createProduct(productoParaEnviar);
     }
 
     cerrarModal();
@@ -130,7 +153,7 @@
 
 <div class="page-header">
   <h1>Productos</h1>
-  <button onclick={nuevo}>Nuevo producto</button>
+  <button class="blue" onclick={nuevo}>Nuevo producto</button>
 </div>
 
 <SearchBox

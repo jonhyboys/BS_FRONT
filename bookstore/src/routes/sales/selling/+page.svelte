@@ -13,8 +13,8 @@
 
   import { getPendingSales, createSale } from '$lib/api/sales.api.js';
   import { createClousure } from '$lib/api/clousures.api.js';
-  import { createInvoice } from '$lib/api/invoices.api.js';
-  import { getProductById } from '$lib/api/products.api.js';
+  import { createInvoice, getInvoiceBySaleId } from '$lib/api/invoices.api.js';
+  import { getProductById, updateProduct } from '$lib/api/products.api.js';
   import { cart } from '$lib/stores/cartStore.js';
 
   // =======================
@@ -142,6 +142,21 @@
       }));
 
       await createSale({ items });
+
+      // Actualizar inventario de cada producto
+      for (const item of cartItems) {
+        try {
+          const product = await getProductById(item.productId);
+          const updatedProduct = {
+            ...product,
+            quantity: product.quantity - item.quantity
+          };
+          await updateProduct(updatedProduct);
+        } catch (err) {
+          console.error(`Error al actualizar inventario del producto ${item.productId}:`, err);
+        }
+      }
+
       cart.clear();
       await loadSales();
     } catch (err) {
@@ -164,9 +179,25 @@
     isTicketModalOpen = true;
   }
 
-  function handleInvoiceClick(sale) {
-    invoiceSalePending = sale;
-    isInvoiceModalOpen = true;
+  async function handleInvoiceClick(sale) {
+    try {
+      // Verificar si ya existe una factura para esta venta
+      const existingInvoice = await getInvoiceBySaleId(sale.id);
+      
+      if (existingInvoice) {
+        // Si existe factura, generar PDF directamente
+        invoiceSale = {
+          ...sale,
+          client: existingInvoice.client
+        };
+      } else {
+        // Si no existe, abrir modal para seleccionar cliente
+        invoiceSalePending = sale;
+        isInvoiceModalOpen = true;
+      }
+    } catch (err) {
+      alert(err.message);
+    }
   }
 
   async function handleInvoiceClientSelected(client) {
@@ -235,7 +266,7 @@
     <!-- VENTAS -->
     <div class="sales-section">
       <h2>
-        Ventas pendientes
+        Ventas pendientes de cierre
         <button
           class="btn-close-day"
           disabled={sales.length === 0}
@@ -244,6 +275,13 @@
           Cerrar día
         </button>
       </h2>
+
+      {#if !salesLoading && !salesError && sales.length > 0}
+        <div class="sales-summary">
+          <p><strong>Total de ventas:</strong> {sales.length}</p>
+          <p><strong>Monto total:</strong> ${sales.reduce((sum, sale) => sum + sale.total, 0).toFixed(2)}</p>
+        </div>
+      {/if}
 
       {#if salesLoading}
         <p>Cargando...</p>
@@ -438,5 +476,24 @@
   .btn-close-day:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  .sales-summary {
+    display: flex;
+    gap: 30px;
+    padding: 12px;
+    background-color: #f0f8ff;
+    border-left: 4px solid #007bff;
+    border-radius: 4px;
+  }
+
+  .sales-summary p {
+    margin: 0;
+    font-size: 0.95em;
+    color: #333;
+  }
+
+  .sales-summary strong {
+    color: #007bff;
   }
 </style>

@@ -39,8 +39,8 @@
   });
 
   function emitirCambios() {
-    onChange({
-      ...product,
+    const cambios = {
+      id: product?.id,
       code: form.code,
       name: form.name,
       category: form.category ? Number(form.category) : null,
@@ -49,7 +49,9 @@
       promotion: Number(form.promotion),
       quantity: Number(form.quantity),
       iva: Number(form.iva)
-    });
+    };
+    console.log('ProductForm emite:', cambios);
+    onChange(cambios);
   }
 </script>
 

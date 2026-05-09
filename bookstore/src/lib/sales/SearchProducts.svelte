@@ -15,7 +15,7 @@
   let debounceTimer;
 
   function isValidSearchQuery(query) {
-    return /^[a-zA-Z0-9]+$/.test(query);
+    return /^[a-zA-Z0-9\s]+$/.test(query);
   }
 
   async function performSearch(query) {
@@ -53,9 +53,13 @@
           
           isOpen = true;
 
-          // Auto-agregar si hay un único resultado
+          // Auto-agregar si hay un único resultado y hay cantidad disponible
           if (results.length === 1) {
-            handleAddProduct(product.id, product.name, 1, product.price, 0);
+            if (1 > product.quantity) {
+              alert(`No hay suficiente cantidad disponible. Disponibles: ${product.quantity}`);
+            } else {
+              handleAddProduct(product.id, product.name, 1, product.price, 0, product.quantity, product.iva);
+            }
             searchQuery = '';
             results = [];
             isOpen = false;
@@ -101,15 +105,23 @@
     }, 300);
   }
 
-  function handleAddProduct(productId, productName, quantity, price, discount) {
+  function handleAddProduct(productId, productName, quantity, price, discount, availableQty, iva) {
+    quantity = parseInt(quantity) || 1;
+    
+    // Validar cantidad disponible
+    if (quantity > availableQty) {
+      alert(`No hay suficiente cantidad disponible. Disponibles: ${availableQty}`);
+      return;
+    }
+    
     if (onAddProduct) {
       onAddProduct({
         productId,
         productName,
-        quantity: parseInt(quantity) || 1,
+        quantity,
         price: parseFloat(price),
         discount: parseInt(discount) || 0,
-        iva: 0
+        iva: parseInt(iva) || 0
       });
     }
     searchQuery = '';
@@ -140,6 +152,9 @@
           <div class="product-info">
             <div class="product-name">{product.name}</div>
             <div class="product-code">Código: {product.code}</div>
+            <div class="product-details">
+              Precio: ${product.price} | Disponible: {product.quantity} | IVA: {product.iva}%
+            </div>
           </div>
 
           <div class="product-controls">
@@ -149,6 +164,7 @@
                 type="number"
                 bind:value={selectedQty[product.id]}
                 min="1"
+                max={product.quantity}
                 step="1"
                 class="input-small"
               />
@@ -174,7 +190,9 @@
                 product.name,
                 selectedQty[product.id] || 1,
                 product.price,
-                selectedDiscount[product.id] || 0
+                selectedDiscount[product.id] || 0,
+                product.quantity,
+                product.iva
               )}
             class="btn-vender"
           >
@@ -263,6 +281,12 @@
   .product-code {
     font-size: 0.85em;
     color: #666;
+  }
+
+  .product-details {
+    font-size: 0.8em;
+    color: #555;
+    margin-top: 5px;
   }
 
   .product-controls {

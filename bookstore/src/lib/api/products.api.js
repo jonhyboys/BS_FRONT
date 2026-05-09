@@ -39,12 +39,26 @@ export async function createProduct(product) {
 }
 
 export async function updateProduct(product) {
-  const res = await fetch(`${BASE_URL}/${product.id}`, {
+  
+  // Limpiar el objeto para enviar solo los campos que espera el backend
+  const cleanProduct = {
+    id: product.id,
+    code: product.code,
+    name: product.name,
+    category: product.categoryId,
+    cost: product.cost,
+    price: product.price,
+    promotion: product.promotion,
+    quantity: product.quantity,
+    iva: product.iva
+  };
+  
+  const res = await fetch(`${BASE_URL}/${cleanProduct.id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(product)
+    body: JSON.stringify(cleanProduct)
   });
 
   if (!res.ok) throw new Error('Error al actualizar producto');

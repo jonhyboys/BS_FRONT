@@ -233,9 +233,9 @@
           </div>
           <div class="info-block">
             <h3>Destinatario</h3>
-            <p><strong>Cliente</strong></p>
-            <p>NIF: -</p>
-            <p>Dirección: -</p>
+            <p><strong>${sale.client?.name || 'Cliente'}</strong></p>
+            <p>NIF: ${sale.client?.nif || '-'}</p>
+            <p>Dirección: ${sale.client?.address || '-'}</p>
           </div>
         </div>
         
