@@ -2,8 +2,9 @@
   import Item from '$lib/list/Item.svelte';
   import AppModal from '$lib/modal/AppModal.svelte';
   import ProductForm from '$lib/products/ProductForm.svelte';
-  import SearchBox from '$lib/search/SearchBox.svelte';
-
+  import SearchBox from '$lib/search/SearchBox.svelte';  
+  import IconButton from '$lib/button/IconButton.svelte';
+  import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
   import {
     getProducts,
     searchProducts,
@@ -15,7 +16,6 @@
   let productos = $state([]);
   let productoSeleccionado = $state(null);
   let errores = $state({});
-
   let search = $state('');
   let loading = $state(false);
   let error = $state(null);
@@ -155,44 +155,39 @@
   <h1>Productos</h1>
   <button class="blue" onclick={nuevo}>Nuevo producto</button>
 </div>
-
-<SearchBox
-  value={search}
-  placeholder="Buscar por nombre o código..."
-  onChange={handleSearch}
-/>
-
+<div class="search-box">
+  <SearchBox
+    value={search}
+    placeholder="Buscar por nombre o código..."
+    onChange={handleSearch}
+  />
+</div>
 {#if loading}
   <p>Cargando productos…</p>
 {/if}
-
 {#if error}
   <p class="error">{error}</p>
 {/if}
-
-{#each productos as producto}
-  <Item>
-    <div slot="image">/svelte-logo.svg</div>
-
-    <div slot="content">
-      <div class="title">{producto.name}</div>
-      <div class="subtitle">
-        Código: {producto.code} · {producto.categoryName}
+<div class="item-container">
+  {#each productos as producto}
+    <Item>
+      <img slot="image" src="/src/img/meetings.png" alt="Producto" height="80px" width="80px" />
+      <div slot="content">
+        <div class="title">{producto.name}</div>
+        <div class="subtitle">Código: {producto.code} · {producto.categoryName}</div>
+        <div class="detail">
+          Precio ${producto.price} |
+          Costo ${producto.cost} <br>
+          Cantidad {producto.quantity}
+        </div>
       </div>
-      <div class="detail">
-        Precio ${producto.price} |
-        Cantidad {producto.quantity} |
-        Costo ${producto.cost}
+      <div slot="actions" class="button-container">
+        <IconButton icon={faEdit} label="Editar" onclick={() => editar(producto)} variant="primary" />
+        <IconButton icon={faTrash} label="Eliminar" onclick={() => eliminar(producto)} variant="danger" />
       </div>
-    </div>
-
-    <div slot="actions">
-      <button onclick={() => editar(producto)}>Editar</button>
-      <button onclick={() => eliminar(producto)}>Eliminar</button>
-    </div>
-  </Item>
-{/each}
-
+    </Item>
+  {/each}
+</div>
 {#if productoSeleccionado}
   <AppModal
     title={productoSeleccionado.id ? 'Editar producto' : 'Nuevo producto'}
@@ -210,6 +205,18 @@
 {/if}
 
 <style>
+  .search-box {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2em;
+  }
+  
+  .item-container {    
+    display: grid;
+    gap: 1em;
+    grid-template-columns: repeat(auto-fill, minmax(25em, 1fr));
+  }
+
   .page-header {
     display: flex;
     justify-content: space-between;
@@ -217,6 +224,7 @@
   }
   .title {
     font-weight: bold;
+    margin-bottom: 1em;
   }
   .subtitle {
     font-size: 0.85em;
@@ -226,7 +234,11 @@
     font-size: 0.85em;
     color: #444;
   }
-  .error {
-    color: red;
+  .error { color: red; }
+
+  .button-container {
+    display: flex;
+    flex-direction: column;
+    gap: .5em;
   }
 </style>

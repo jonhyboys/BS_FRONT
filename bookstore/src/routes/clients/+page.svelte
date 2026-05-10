@@ -3,7 +3,8 @@
   import AppModal from '$lib/modal/AppModal.svelte';
   import ClientForm from '$lib/clients/ClientForm.svelte';
   import SearchBox from '$lib/search/SearchBox.svelte';
-
+  import IconButton from '$lib/button/IconButton.svelte';
+  import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
   import {
     getClients,
     searchClientsByName,
@@ -15,7 +16,6 @@
   let clientes = $state([]);
   let clienteSeleccionado = $state(null);
   let errores = $state({});
-
   let search = $state('');
   let loading = $state(false);
   let error = $state(null);
@@ -119,14 +119,15 @@
 <!-- HEADER -->
 <div class="page-header">
   <h1>Clientes</h1>
-  <button onclick={nuevo}>Nuevo cliente</button>
+  <button onclick={nuevo} class="blue">Nuevo cliente</button>
 </div>
-
-<SearchBox
+<div class="search-box">
+  <SearchBox
   value={search}
   placeholder="Buscar cliente..."
   onChange={handleSearch}
 />
+</div>
 
 {#if loading}
   <p>Cargando clientes…</p>
@@ -136,24 +137,27 @@
   <p class="error">{error}</p>
 {/if}
 
-{#each clientes as cliente}
-  <Item>
-    <div slot="image">👤</div>
+<div class="item-container">
+  {#each clientes as cliente}
+    <Item>
+      <div slot="image">👤</div>
 
-    <div slot="content">
-      <div class="title">{cliente.name}</div>
-      <div class="subtitle">{cliente.nif}</div>
-      <div class="detail">
-        Tel: {cliente.phone} | Dir: {cliente.address}
+      <div slot="content">
+        <div class="title">{cliente.name}</div>
+        <div class="subtitle">{cliente.nif}</div>
+        <div class="detail">
+          Tel: {cliente.phone} <br />
+          Dir: {cliente.address}
+        </div>
       </div>
-    </div>
 
-    <div slot="actions">
-      <button onclick={() => editar(cliente)}>Editar</button>
-      <button onclick={() => eliminar(cliente)}>Eliminar</button>
-    </div>
-  </Item>
-{/each}
+      <div slot="actions" class="button-container">
+        <IconButton icon={faEdit} label="Editar" onclick={() => editar(cliente)} variant="primary" />
+        <IconButton icon={faTrash} label="Eliminar" onclick={() => eliminar(cliente)} variant="danger" />
+      </div>
+    </Item>
+  {/each}
+</div>
 
 {#if clienteSeleccionado}
   <AppModal
@@ -172,13 +176,42 @@
 {/if}
 
 <style>
+  .search-box {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2em;
+  }
+  
+  .item-container {    
+    display: grid;
+    gap: 1em;
+    grid-template-columns: repeat(auto-fill, minmax(25em, 1fr));
+  }
+
+  .title {
+    font-weight: bold;
+    margin-bottom: 1em;
+  }
+  .subtitle {
+    font-size: 0.85em;
+    color: #666;
+  }
+  .detail {
+    font-size: 0.85em;
+    color: #444;
+  }
+
   .page-header {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
   }
 
-  .error {
-    color: red;
+  .error { color: red; }
+
+  .button-container {
+    display: flex;
+    flex-direction: column;
+    gap: .5em;
   }
 </style>

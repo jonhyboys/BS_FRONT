@@ -2,41 +2,32 @@
   <div class="image">
     <slot name="image" />
   </div>
-
   <div class="content">
     <slot name="content" />
   </div>
-
   <div class="actions">
     <slot name="actions" />
-  </div>
+  </div>  
 </div>
 
 <style>
   .item {
+    align-items: flex-start;
+    background: #FFF;
+    border: 1px solid #DADADA;
     display: flex;
     gap: 12px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    background: white;
-    align-items: flex-start;
+    padding: .5em;
   }
 
   .image {
-    width: 48px;
-    height: 48px;
+    width: 80px;
+    height: 80px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  .content {
-    flex: 1;
-  }
-
-  .actions {
-    display: flex;
-    gap: 6px;
-  }
+  .content { flex: 1;}
 </style>

@@ -25,9 +25,9 @@
 <style>
   input {
     width: 100%;
-    max-width: 400px;
-    margin: 10px 0 16px 0;
-    padding: 6px 8px;
+    max-width: 40em;
+    margin: 1em;
+    padding: 1em;
     box-sizing: border-box;
   }
 </style>
