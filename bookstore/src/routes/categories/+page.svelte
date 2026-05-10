@@ -3,6 +3,8 @@
   import AppModal from '$lib/modal/AppModal.svelte';
   import CategoryForm from '$lib/categories/CategoryForm.svelte';
   import SearchBox from '$lib/search/SearchBox.svelte';
+  import IconButton from '$lib/button/IconButton.svelte';
+  import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 
   import {
     getCategories,
@@ -123,15 +125,16 @@
 <!-- HEADER -->
 <div class="page-header">
   <h1>Categorías</h1>
-  <button onclick={nuevo}>Nueva categoría</button>
+  <button onclick={nuevo} class="blue">Nueva categoría</button>
 </div>
 
-<!-- ✅ BUSCADOR RESTAURADO -->
-<SearchBox
-  value={search}
-  placeholder="Buscar categoría..."
-  onChange={handleSearch}
-/>
+<div class="search-box">
+  <SearchBox
+    value={search}
+    placeholder="Buscar categoría..."
+    onChange={handleSearch}
+  />
+</div>
 
 {#if loading}
   <p>Cargando categorías…</p>
@@ -141,23 +144,23 @@
   <p class="error">{error}</p>
 {/if}
 
-{#each categorias as categoria}
-  <Item>
-    <div slot="image">📂</div>
-
-    <div slot="content">
-      <div class="title">{categoria.name}</div>
-      <div class="detail">
-        Categoría padre: {categoria.motherCategoryName ?? '—'}
+<div class="item-container">
+  {#each categorias as categoria}
+    <Item>
+      <div slot="image">📂</div>
+      <div slot="content">
+        <div class="title">{categoria.name}</div>
+        <div class="detail">
+          Categoría padre: {categoria.motherCategoryName ?? '—'}
+        </div>
       </div>
-    </div>
-
-    <div slot="actions">
-      <button onclick={() => editar(categoria)}>Editar</button>
-      <button onclick={() => eliminar(categoria)}>Eliminar</button>
-    </div>
-  </Item>
-{/each}
+      <div slot="actions" class="button-container">
+        <IconButton icon={faEdit} label="Editar" onclick={() => editar(categoria)} variant="primary" />
+        <IconButton icon={faTrash} label="Eliminar" onclick={() => eliminar(categoria)} variant="danger" />
+      </div>
+    </Item>
+  {/each}
+</div>
 
 {#if categoriaSeleccionada}
   <AppModal
@@ -177,14 +180,26 @@
 {/if}
 
 <style>
+  .search-box {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2em;
+  }
+  
+  .item-container {    
+    display: grid;
+    gap: 1em;
+    grid-template-columns: repeat(auto-fill, minmax(25em, 1fr));
+  }
   .page-header {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
   }
 
-  .title {
+  .title { 
     font-weight: bold;
+    margin-bottom: 1em;
   }
 
   .detail {
@@ -192,7 +207,11 @@
     color: #444;
   }
 
-  .error {
-    color: red;
+  .error { color: red; }
+
+  .button-container {
+    display: flex;
+    flex-direction: column;
+    gap: .5em;
   }
 </style>

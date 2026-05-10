@@ -1,17 +1,13 @@
 <script>
   import { searchProducts, getProductByCode } from '$lib/api/products.api.js';
-
   let { onAddProduct } = $props();
-
   let searchQuery = $state('');
   let results = $state([]);
   let isOpen = $state(false);
   let loading = $state(false);
   let error = $state(null);
-
   let selectedQty = $state({});
-  let selectedDiscount = $state({});
-  
+  let selectedDiscount = $state({});  
   let debounceTimer;
 
   function isValidSearchQuery(query) {
@@ -215,7 +211,6 @@
     </div>
   {/if}
 
-  <!-- Cerrar dropdown al hacer clic fuera -->
   {#if isOpen}
     <div class="overlay" onclick={closeDropdown}></div>
   {/if}
@@ -223,13 +218,15 @@
 
 <style>
   .search-container {
-    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2em;
     position: relative;
   }
 
   .search-input {
-    width: 100%;
-    padding: 10px;
+    width: 40em;
+    padding: 1em;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 1em;
@@ -243,35 +240,28 @@
   }
 
   .dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
     background: white;
     border: 1px solid #ddd;
-    border-radius: 4px;
-    max-height: 400px;
-    overflow-y: auto;
-    z-index: 1000;
-    margin-top: 5px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    max-height: 40em;
+    overflow-y: auto;
+    position: absolute;
+    top: 100%;
+    width: 40em;
+    z-index: 1;
   }
 
   .search-result-item {
-    padding: 15px;
+    align-items: center;
     border-bottom: 1px solid #eee;
     display: flex;
-    gap: 15px;
-    align-items: center;
+    gap: 1em;
+    padding: 1em;
   }
 
-  .search-result-item:last-child {
-    border-bottom: none;
-  }
+  .search-result-item:last-child { border-bottom: none; }
 
-  .product-info {
-    flex: 1;
-  }
+  .product-info { flex: 1; }
 
   .product-name {
     font-weight: 600;
@@ -325,9 +315,7 @@
     white-space: nowrap;
   }
 
-  .btn-vender:hover {
-    background-color: #218838;
-  }
+  .btn-vender:hover { background-color: #218838; }
 
   .loading-message,
   .error-message {
@@ -335,13 +323,9 @@
     text-align: center;
   }
 
-  .loading-message {
-    color: #666;
-  }
+  .loading-message { color: #666; }
 
-  .error-message {
-    color: #dc3545;
-  }
+  .error-message { color: #dc3545; }
 
   .overlay {
     position: fixed;

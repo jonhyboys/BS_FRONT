@@ -1,6 +1,5 @@
 <script>
   import { onMount } from 'svelte';
-
   import SaleRow from '$lib/sales/SaleRow.svelte';
   import SearchProducts from '$lib/sales/SearchProducts.svelte';
   import CartItems from '$lib/sales/CartItems.svelte';
@@ -10,7 +9,6 @@
   import TicketModal from '$lib/sales/TicketModal.svelte';
   import InvoiceGenerator from '$lib/sales/InvoiceGenerator.svelte';
   import InvoiceClientModal from '$lib/invoices/InvoiceClientModal.svelte';
-
   import { getPendingSales, createSale } from '$lib/api/sales.api.js';
   import { createClousure } from '$lib/api/clousures.api.js';
   import { createInvoice, getInvoiceBySaleId } from '$lib/api/invoices.api.js';
@@ -226,13 +224,8 @@
   }
 </script>
 
-<!-- =======================
-     TEMPLATE
-     ======================= -->
-
 <div class="page-container">
   <h1>Vender</h1>
-
   <SearchProducts onAddProduct={handleAddProduct} />
 
   <div class="main-content">
@@ -332,10 +325,6 @@
     <InvoiceGenerator bind:sale={invoiceSale} />
   {/if}
 </div>
-
-<!-- =======================
-     STYLES (SIN CAMBIOS)
-     ======================= -->
 
 <style>
   .page-container {
