@@ -21,12 +21,13 @@
   }
 
   .image {
-    width: 80px;
-    height: 80px;
-    flex-shrink: 0;
-    display: flex;
     align-items: center;
+    display: flex;
+    flex-shrink: 0;
+    font-size: 3em;
+    height: 80px;
     justify-content: center;
+    width: 80px;
   }
 
   .content { flex: 1;}

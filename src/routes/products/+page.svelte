@@ -4,7 +4,9 @@
   import ProductForm from '$lib/products/ProductForm.svelte';
   import SearchBox from '$lib/search/SearchBox.svelte';  
   import IconButton from '$lib/button/IconButton.svelte';
-  import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+  import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+  import { faEdit, faTrash, faCoins, faTag, faBoxesStacked, faGift } from '@fortawesome/free-solid-svg-icons';
+  import PageTitle from '$lib/page/PageTitle.svelte';
   import {
     getProducts,
     searchProducts,
@@ -151,17 +153,13 @@
   }
 </script>
 
-<div class="page-header">
-  <h1>Productos</h1>
-  <button class="blue" onclick={nuevo}>Nuevo producto</button>
-</div>
-<div class="search-box">
-  <SearchBox
-    value={search}
-    placeholder="Buscar por nombre o código..."
-    onChange={handleSearch}
-  />
-</div>
+<PageTitle title="Productos" buttonLabel="Nuevo producto" buttonOnClick={nuevo} />
+<SearchBox
+  value={search}
+  placeholder="Buscar por nombre o código..."
+  onChange={handleSearch}
+/>
+
 {#if loading}
   <p>Cargando productos…</p>
 {/if}
@@ -171,19 +169,19 @@
 <div class="item-container">
   {#each productos as producto}
     <Item>
-      <img slot="image" src="/src/img/meetings.png" alt="Producto" height="80px" width="80px" />
+      <FontAwesomeIcon slot="image" icon={faGift} />
       <div slot="content">
-        <div class="title">{producto.name}</div>
-        <div class="subtitle">Código: {producto.code} · {producto.categoryName}</div>
+        <div class="title">{producto.name}</div>        
+        <div class="subtitle">{producto.code} | {producto.categoryName}</div>
         <div class="detail">
-          Precio ${producto.price} |
-          Costo ${producto.cost} <br>
-          Cantidad {producto.quantity}
+          <span><FontAwesomeIcon icon={faCoins} /> {producto.price}</span>
+          <span><FontAwesomeIcon icon={faTag} /> {producto.cost}</span>
+          <span><FontAwesomeIcon icon={faBoxesStacked} /> {producto.quantity}</span>
         </div>
       </div>
       <div slot="actions" class="button-container">
-        <IconButton icon={faEdit} label="Editar" onclick={() => editar(producto)} variant="primary" />
-        <IconButton icon={faTrash} label="Eliminar" onclick={() => eliminar(producto)} variant="danger" />
+        <IconButton size="2x" icon={faEdit} label="Editar" onclick={() => editar(producto)} />
+        <IconButton size="2x" icon={faTrash} label="Eliminar" onclick={() => eliminar(producto)} />
       </div>
     </Item>
   {/each}
@@ -204,36 +202,27 @@
   </AppModal>
 {/if}
 
-<style>
-  .search-box {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 2em;
-  }
-  
+<style>  
   .item-container {    
     display: grid;
     gap: 1em;
     grid-template-columns: repeat(auto-fill, minmax(25em, 1fr));
   }
-
-  .page-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
+  
   .title {
+    font-size: 1.2em;
     font-weight: bold;
-    margin-bottom: 1em;
+    margin-bottom: .5em;
   }
-  .subtitle {
-    font-size: 0.85em;
-    color: #666;
+  .subtitle { 
+      color: #888;
+      margin-bottom: .5em;
   }
-  .detail {
-    font-size: 0.85em;
-    color: #444;
-  }
+  
+  .detail { color: #444; }
+
+  .detail > span { margin-right: 1em; }
+
   .error { color: red; }
 
   .button-container {

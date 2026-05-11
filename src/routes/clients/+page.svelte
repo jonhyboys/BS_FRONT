@@ -12,6 +12,7 @@
     updateClient,
     deleteClient
   } from '$lib/api/clients.api.js';
+  import PageTitle from '$lib/page/PageTitle.svelte';
 
   let clientes = $state([]);
   let clienteSeleccionado = $state(null);
@@ -116,18 +117,12 @@
   }
 </script>
 
-<!-- HEADER -->
-<div class="page-header">
-  <h1>Clientes</h1>
-  <button onclick={nuevo} class="blue">Nuevo cliente</button>
-</div>
-<div class="search-box">
-  <SearchBox
+<PageTitle title="Clientes" buttonLabel="Nuevo cliente" buttonOnClick={nuevo} />
+<SearchBox
   value={search}
   placeholder="Buscar cliente..."
   onChange={handleSearch}
 />
-</div>
 
 {#if loading}
   <p>Cargando clientes…</p>
@@ -176,12 +171,6 @@
 {/if}
 
 <style>
-  .search-box {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 2em;
-  }
-  
   .item-container {    
     display: grid;
     gap: 1em;
@@ -199,12 +188,6 @@
   .detail {
     font-size: 0.85em;
     color: #444;
-  }
-
-  .page-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
   }
 
   .error { color: red; }
