@@ -4,6 +4,7 @@
   import CategoryForm from '$lib/categories/CategoryForm.svelte';
   import SearchBox from '$lib/search/SearchBox.svelte';
   import IconButton from '$lib/button/IconButton.svelte';
+  import PageTitle from '$lib/page/PageTitle.svelte';
   import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 
   import {
@@ -122,19 +123,15 @@
   }
 </script>
 
-<!-- HEADER -->
-<div class="page-header">
-  <h1>Categorías</h1>
-  <button onclick={nuevo} class="blue">Nueva categoría</button>
-</div>
-
-<div class="search-box">
-  <SearchBox
-    value={search}
-    placeholder="Buscar categoría..."
-    onChange={handleSearch}
-  />
-</div>
+<PageTitle title="Categorías" buttonLabel="Nueva categoría" buttonOnClick={nuevo}>
+  {#snippet children()}
+    <SearchBox
+      value={search}
+      placeholder="Buscar categoría..."
+      onChange={handleSearch}
+    />
+  {/snippet}
+</PageTitle>
 
 {#if loading}
   <p>Cargando categorías…</p>
@@ -180,21 +177,10 @@
 {/if}
 
 <style>
-  .search-box {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 2em;
-  }
-  
   .item-container {    
     display: grid;
     gap: 1em;
     grid-template-columns: repeat(auto-fill, minmax(25em, 1fr));
-  }
-  .page-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
   }
 
   .title { 

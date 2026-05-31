@@ -69,7 +69,7 @@
     gap: 1em;
     justify-content: flex-end;
     margin-bottom: 2em;
-    padding: 1em;
+    padding: 0 1em;
   }
 
   .dates {

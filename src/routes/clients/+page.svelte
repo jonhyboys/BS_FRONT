@@ -117,12 +117,15 @@
   }
 </script>
 
-<PageTitle title="Clientes" buttonLabel="Nuevo cliente" buttonOnClick={nuevo} />
-<SearchBox
-  value={search}
-  placeholder="Buscar cliente..."
-  onChange={handleSearch}
-/>
+<PageTitle title="Clientes" buttonLabel="Nuevo cliente" buttonOnClick={nuevo}>
+  {#snippet children()}
+    <SearchBox
+      value={search}
+      placeholder="Buscar cliente..."
+      onChange={handleSearch}
+    />
+  {/snippet}
+</PageTitle>
 
 {#if loading}
   <p>Cargando clientes…</p>

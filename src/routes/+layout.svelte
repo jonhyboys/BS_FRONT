@@ -44,6 +44,7 @@
     align-items: center;
     display: flex;
     justify-content: space-between;
+    margin-bottom: 1em;
   }
 
   .brand { gap: 1em; }

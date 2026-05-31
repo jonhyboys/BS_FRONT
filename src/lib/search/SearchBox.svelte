@@ -22,7 +22,6 @@
   .search-box {
     display: flex;
     justify-content: center;
-    margin-bottom: 2em;
   }
   input {
     box-sizing: border-box;

@@ -87,10 +87,15 @@
   }
 </script>
 
-<SearchProducts />
+<PageTitle title="Ventas">
+  {#snippet children()}
+    <SearchProducts />
+  {/snippet}
+</PageTitle>
+
 <div class="container">
   <Cart onsaleComplete={handleSaleComplete} />
-  <div class="sales-container">
+  <div class="sales-wrapper">
     <div class="sales-header">
       <h2>Ventas pendientes de cierre</h2>
       <IconButton size="2x" icon={faCashRegister} label="Cerrar día" onclick={handleCloseDay} disabled={sales.length === 0} />
@@ -109,7 +114,7 @@
     justify-content: space-between;
   }
 
-  .sales-container {
+  .sales-wrapper {
     flex: 1;
     margin: 0 1em;
   }
