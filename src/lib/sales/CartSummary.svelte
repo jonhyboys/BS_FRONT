@@ -32,72 +32,37 @@
 </script>
 
 <div class="cart-summary">
-  <h3>Resumen</h3>
-  <div class="summary-items">
-    <div class="summary-row">
-      <span class="label">Monto Base:</span>
-      <span class="value">${summary.baseTotalAmount.toFixed(2)}</span>
+  <div class="summary-details">
+    <div>
+      <span>Monto Base:</span>
+      <span>{summary.baseTotalAmount.toFixed(2)}</span>
     </div>
-    <div class="summary-row">
-      <span class="label">Descuento:</span>
-      <span class="value">-${summary.totalDiscount.toFixed(2)}</span>
+    <div>
+      <span>Descuento:</span>
+      <span>-{summary.totalDiscount.toFixed(2)}</span>
     </div>
-    <div class="summary-row">
-      <span class="label">IVA:</span>
-      <span class="value">${summary.ivaAmount.toFixed(2)}</span>
+    <div>
+      <span>IVA:</span>
+      <span>{summary.ivaAmount.toFixed(2)}</span>
     </div>
-    <div class="summary-row total">
-      <span class="label">Total:</span>
-      <span class="value">${summary.total.toFixed(2)}</span>
+    <div>
+      <span>Total:</span>
+      <span>{summary.total.toFixed(2)}</span>
     </div>
   </div>
 </div>
 
 <style>
-  .cart-summary {
-    padding: 15px;
-    background: #f9f9f9;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-  }
-
-  .cart-summary h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.1em;
-  }
-
-  .summary-items {
+  .summary-details {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    font-weight: bold;
+    gap: 0.5em;
+    padding: 0.5em 0;
   }
 
-  .summary-row {
+  .summary-details > div {
     display: flex;
     justify-content: space-between;
-    padding: 8px;
-    font-size: 0.95em;
-  }
-
-  .summary-row.total {
-    border-top: 2px solid #ddd;
-    padding-top: 12px;
-    margin-top: 5px;
-    font-weight: 600;
-    font-size: 1.1em;
-  }
-
-  .label {
-    color: #666;
-  }
-
-  .value {
-    font-weight: 600;
-    color: #333;
-  }
-
-  .summary-row.total .value {
-    color: #007bff;
   }
 </style>

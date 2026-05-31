@@ -12,7 +12,6 @@
 <header>
   <div class="brand">
     <img src="/src/img/Genil.png" alt="Logo" />
-    <span>Librería Genil</span>
   </div>
   <nav>
     <ul class="menu">
@@ -44,7 +43,6 @@
   header {
     align-items: center;
     display: flex;
-    padding: 1em;
     justify-content: space-between;
   }
 
@@ -52,15 +50,7 @@
 
   .brand img { height: 4em; }
 
-  .brand span { 
-    color: #FFF;
-    user-select: none;
-   }
-
-  .menu {
-    display: flex;
-    gap: 1em;
-  }
+  .menu { display: flex; }
 
   .menu a,
   .menu-button {
@@ -70,7 +60,7 @@
     cursor: pointer;
     display: block;
     font: inherit;
-    padding: 1em;
+    padding: .5em;
     text-decoration: none;
   }
 
@@ -93,6 +83,4 @@
   }
 
   .submenu a { padding: .5em; }
-
-  main { padding: 1em; }
 </style>

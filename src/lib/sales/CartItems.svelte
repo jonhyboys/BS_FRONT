@@ -1,4 +1,8 @@
 <script>
+  import IconButton from '$lib/button/IconButton.svelte';
+  import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+  import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+
   let { items = [], onEdit, onRemove } = $props();
 
   function calculateSubtotal(item) {
@@ -19,40 +23,38 @@
 </script>
 
 <div class="cart-items">
-  <h3>Productos</h3>
-
   {#if items.length === 0}
     <p class="empty-message">No hay productos en el carrito</p>
   {:else}
     <div class="items-list">
       {#each items as item (item.id)}
         <div class="cart-item">
-          <div class="item-info">
-            <div class="product-name">{item.productName}</div>
-            <div class="item-details">
-              <span>Cant: {item.quantity}</span>
-              <span>Precio: ${item.price.toFixed(2)}</span>
-              <span>Desc: {item.discount}%</span>
-              <span>SubTotal: ${calculateSubtotal(item).toFixed(2)}</span>
+          <div class="item-details">
+            <div>
+              <div class="item-name">
+                <span>{item.quantity}</span> - 
+                <span>{item.productName}</span>
+              </div>
+              <div>c/u {item.price.toFixed(2)}</div>
+            </div>
+            <div>
+              <div>Monto:</div>
+              <div>{(item.quantity * item.price).toFixed(2)}</div>
+            </div>
+            {#if item.discount > 0}
+              <div>
+                <div>Descuento ({item.discount}%):</div>
+                <div>-{((item.quantity * item.price) * (item.discount / 100)).toFixed(2)}</div>
+              </div>
+            {/if}
+            <div>
+              <div>Subtotal:</div>
+              <div>{calculateSubtotal(item).toFixed(2)}</div>
             </div>
           </div>
           <div class="item-actions">
-            <button
-              type="button"
-              onclick={() => handleEdit(item)}
-              class="btn-edit"
-              title="Editar"
-            >
-              Editar
-            </button>
-            <button
-              type="button"
-              onclick={() => handleRemove(item)}
-              class="btn-delete"
-              title="Eliminar"
-            >
-              Eliminar
-            </button>
+            <IconButton icon={faEdit} label="Editar" onclick={() => handleEdit(item)} />
+            <IconButton icon={faTrash} label="Eliminar" onclick={() => handleRemove(item)} />
           </div>
         </div>
       {/each}
@@ -61,89 +63,37 @@
 </div>
 
 <style>
-  .cart-items {
-    padding: 15px;
-    background: #f9f9f9;
-    border-radius: 4px;
-    max-height: 400px;
-    overflow-y: auto;
-  }
-
-  .cart-items h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.1em;
-  }
-
   .empty-message {
+    font-style: italic;
     text-align: center;
-    color: #999;
-    padding: 20px 0;
-  }
-
-  .items-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
   }
 
   .cart-item {
-    display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
-
-  .item-info {
-    flex: 1;
-  }
-
-  .product-name {
-    font-weight: 600;
-    margin-bottom: 5px;
+    border-bottom: 1px dotted #ccc;
+    display: flex;
+    gap: 1em;
+    justify-content: space-between;
+    padding: 0.5em 0;
   }
 
   .item-details {
     display: flex;
-    gap: 15px;
-    font-size: 0.85em;
-    color: #666;
-    flex-wrap: wrap;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .item-details > div {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .item-name {
+    font-style: italic;
   }
 
   .item-actions {
     display: flex;
-    gap: 8px;
-    margin-left: 10px;
-  }
-
-  .btn-edit,
-  .btn-delete {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85em;
-  }
-
-  .btn-edit {
-    background-color: #17a2b8;
-    color: white;
-  }
-
-  .btn-edit:hover {
-    background-color: #138496;
-  }
-
-  .btn-delete {
-    background-color: #dc3545;
-    color: white;
-  }
-
-  .btn-delete:hover {
-    background-color: #c82333;
+    flex-direction: column;
   }
 </style>

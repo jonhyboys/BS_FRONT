@@ -1,11 +1,13 @@
 <script>
   import { getProductById } from '$lib/api/products.api.js';
+  import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+  import { faRectangleXmark, faFloppyDisk } from '@fortawesome/free-solid-svg-icons';
+  import IconButton from '$lib/button/IconButton.svelte';
 
   let { isOpen = $bindable(false), onAdd } = $props();
   let product = $state(null);
   let loading = $state(true);
   let error = $state(null);
-
   let formData = $state({
     quantity: 1,
     price: 0,
@@ -45,96 +47,53 @@
     isOpen = false;
   }
 
-  function handleCancel() {
-    isOpen = false;
-  }
+  function handleCancel() { isOpen = false;}
 
   $effect(() => {
-    if (isOpen && !product) {
-      loadProduct();
-    }
+    if (isOpen && !product) { loadProduct();}
   });
 </script>
 
 {#if isOpen}
-  <div class="modal-overlay" onclick={() => (isOpen = false)}>
-    <div class="modal" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header">
-        <h2>Agregar Producto Manual</h2>
-        <button
-          type="button"
-          class="close-btn"
-          onclick={() => (isOpen = false)}
-        >
-          ×
-        </button>
-      </div>
-
-      <div class="modal-body">
+  <div class="modal-overlay">
+    <div class="modal">
+      <h2>Agregar producto a mano</h2>
+      <div class="body">
         {#if loading}
           <p>Cargando producto...</p>
         {:else if error}
-          <p style="color: red;">{error}</p>
+          <p>{error}</p>
         {:else if product}
           <div class="form-group">
-            <label>Producto</label>
-            <input type="text" value={product.name} disabled />
+            <label for="productName">Producto</label>
+            <input name="productName" type="text" value={product.name} disabled />
           </div>
-
           <div class="form-row">
             <div class="form-group">
-              <label>Cantidad</label>
-              <input
-                type="number"
-                bind:value={formData.quantity}
-                min="1"
-                step="1"
-              />
+              <label for="quantity">Cantidad</label>
+              <input name="quantity" type="number" bind:value={formData.quantity} min="1" step="1" />
             </div>
             <div class="form-group">
-              <label>Precio</label>
-              <input
-                type="number"
-                bind:value={formData.price}
-                min="0"
-                step="0.01"
-              />
+              <label for="price">Precio</label>
+              <input name="price" type="number" bind:value={formData.price} min="0" step="0.01" />
             </div>
           </div>
-
           <div class="form-row">
             <div class="form-group">
-              <label>Descuento (%)</label>
-              <input
-                type="number"
-                bind:value={formData.discount}
-                min="0"
-                max="100"
-                step="1"
-              />
+              <label for="discount">Descuento (%)</label>
+              <input name="discount" type="number" bind:value={formData.discount} min="0" max="100" step="1" />
             </div>
             <div class="form-group">
-              <label>IVA (%)</label>
-              <input
-                type="number"
-                bind:value={formData.iva}
-                min="0"
-                max="100"
-                step="1"
-              />
+              <label for="iva">IVA (%)</label>
+              <input name="iva" type="number" bind:value={formData.iva} min="0" max="100" step="1" />
             </div>
           </div>
         {/if}
       </div>
-
-      <div class="modal-footer">
-        <button type="button" onclick={handleCancel} class="btn-secondary">
-          Cancelar
-        </button>
+      <div class="actions">
+        <IconButton size="2x" icon={faRectangleXmark} label="Cancelar" onclick={handleCancel} />
         {#if !loading && !error}
-          <button type="button" onclick={handleAdd} class="btn-primary">
-            Agregar
-          </button>
+          <IconButton size="2x" icon={faFloppyDisk} label="Agregar" onclick={handleAdd} />
         {/if}
       </div>
     </div>
@@ -143,111 +102,46 @@
 
 <style>
   .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
     align-items: center;
+    background: #0003;
+    display: flex;
+    inset: 0;
     justify-content: center;
-    z-index: 1000;
+    position: fixed;
+    z-index: 10;
   }
 
   .modal {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    min-width: 320px;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid #eee;
-  }
-
-  .modal-header h2 {
-    margin: 0;
-    font-size: 1.3em;
-  }
-
-  .close-btn {
-    background: none;
-    border: none;
-    font-size: 2em;
-    cursor: pointer;
-    color: #666;
-  }
-
-  .close-btn:hover {
-    color: #000;
-  }
-
-  .modal-body {
-    padding: 20px;
-  }
-
-  .form-group {
-    margin-bottom: 15px;
+    background: #FFF;
+    box-shadow: 0 4px 16px #000;
     display: flex;
     flex-direction: column;
+    max-width: 50%;
+    padding: 1em;
   }
 
-  .form-group label {
-    margin-bottom: 5px;
-    font-weight: 600;
-    font-size: 0.9em;
-  }
-
-  .form-group input {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1em;
-  }
+  .body { margin: 1em 0; }
 
   .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    gap: 1em;
   }
 
-  .modal-footer {
+  .form-group {
     display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    padding: 20px;
-    border-top: 1px solid #eee;
+    flex-direction: column;
+    padding: 0.5em 0;
   }
 
-  .btn-primary,
-  .btn-secondary {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9em;
-  }
+  .form-group label { font-weight: 600; }
 
-  .btn-primary {
-    background-color: #007bff;
-    color: white;
-  }
+  .form-group input { padding: 0.5em; }
 
-  .btn-primary:hover {
-    background-color: #0056b3;
-  }
-
-  .btn-secondary {
-    background-color: #6c757d;
-    color: white;
-  }
-
-  .btn-secondary:hover {
-    background-color: #545b62;
+  .actions {
+    display: flex;
+    gap: 1em;
+    justify-content: space-between;
+    margin-top: 1em;
   }
 </style>

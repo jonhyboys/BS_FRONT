@@ -1,6 +1,6 @@
 <script>
   import { searchProducts, getProductByCode } from '$lib/api/products.api.js';
-  let { onAddProduct } = $props();
+  import { cart } from '$lib/stores/cartStore.js';
   let searchQuery = $state('');
   let results = $state([]);
   let isOpen = $state(false);
@@ -103,6 +103,7 @@
 
   function handleAddProduct(productId, productName, quantity, price, discount, availableQty, iva) {
     quantity = parseInt(quantity) || 1;
+    discount = parseInt(discount) || 0;
     
     // Validar cantidad disponible
     if (quantity > availableQty) {
@@ -110,16 +111,24 @@
       return;
     }
     
-    if (onAddProduct) {
-      onAddProduct({
-        productId,
-        productName,
-        quantity,
-        price: parseFloat(price),
-        discount: parseInt(discount) || 0,
-        iva: parseInt(iva) || 0
-      });
-    }
+    console.log('Adding to cart:', {
+      productId,
+      productName,
+      quantity,
+      price: parseFloat(price),
+      discount,
+      iva: parseInt(iva) || 0
+    });
+    
+    cart.addItem({
+      productId,
+      productName,
+      quantity,
+      price: parseFloat(price),
+      discount,
+      iva: parseInt(iva) || 0
+    });
+    
     searchQuery = '';
     results = [];
     isOpen = false;
@@ -158,38 +167,46 @@
               <label>Cant:</label>
               <input
                 type="number"
-                bind:value={selectedQty[product.id]}
+                value={selectedQty[product.id]}
+                oninput={(e) => { selectedQty[product.id] = parseInt(e.target.value) || 1; }}
                 min="1"
                 max={product.quantity}
                 step="1"
-                class="input-small"
+                class="input-small qty-input"
+                data-product-id={product.id}
               />
             </div>
             <div class="control-group">
               <label>Desc %:</label>
               <input
                 type="number"
-                bind:value={selectedDiscount[product.id]}
+                value={selectedDiscount[product.id]}
+                oninput={(e) => { selectedDiscount[product.id] = parseInt(e.target.value) || 0; }}
                 min="0"
                 max="100"
                 step="1"
-                class="input-small"
+                class="input-small disc-input"
+                data-product-id={product.id}
               />
             </div>
           </div>
 
           <button
             type="button"
-            onclick={() =>
+            onclick={() => {
+              const qty = selectedQty[product.id] || 1;
+              const disc = selectedDiscount[product.id] || 0;
+              console.log('Button clicked:', { product: product.id, qty, disc });
               handleAddProduct(
                 product.id,
                 product.name,
-                selectedQty[product.id] || 1,
+                qty,
                 product.price,
-                selectedDiscount[product.id] || 0,
+                disc,
                 product.quantity,
                 product.iva
-              )}
+              );
+            }}
             class="btn-vender"
           >
             Vender
@@ -248,7 +265,7 @@
     position: absolute;
     top: 100%;
     width: 40em;
-    z-index: 1;
+    z-index: 1000;
   }
 
   .search-result-item {

@@ -1,6 +1,9 @@
 <script>
-  let { sale, onTicket, onInvoice } = $props();
+  import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+  import { faSquareCaretDown, faSquareCaretUp, faReceipt, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+  import IconButton from '$lib/button/IconButton.svelte';
 
+  let { sale, onTicket, onInvoice } = $props();
   let expanded = $state(false);
 
   function toggle() {
@@ -22,58 +25,62 @@
       onInvoice(sale);
     }
   }
+
+  function calculateSubtotal(item) {
+    const baseAmount = item.quantity * item.price;
+    const discountAmount = baseAmount * (item.discount / 100);
+    return baseAmount - discountAmount;
+  }
 </script>
 
 <div class="sale-row">
-  <!-- HEADER / ITEM -->
   <div class="sale-header">
-    <button
-      type="button"
-      class="toggle"
-      onclick={toggle}
-      aria-label="Mostrar sección detalle"
-    >
-      {expanded ? '▲' : '▼'}
-    </button>
-
+    {#if expanded}
+      <IconButton size="2x" icon={faSquareCaretUp} label="Ocultar detalle" onclick={toggle} />
+    {:else}
+      <IconButton size="2x" icon={faSquareCaretDown} label="Mostrar detalle" onclick={toggle} />
+    {/if}
     <div class="summary">
-      <!-- TITLE -->
-      <div class="title">
-        {formatDate(sale.date)}
-      </div>
-
-      <!-- SUBTITLE -->
-      <div class="subtitle">
-        Total: ${sale.total}
-      </div>
-
-      <!-- DETAIL (DEL ITEM, SIEMPRE VISIBLE) -->
+      <div class="title">{formatDate(sale.date)}</div>
       <div class="detail">
-        Base: ${sale.baseTotalAmount} |
-        Desc: ${sale.baseTotalDiscount} |
-        IVA: ${sale.ivaAmount}
+        Base: {sale.baseTotalAmount} |
+        Desc: {sale.baseTotalDiscount} |
+        IVA: {sale.ivaAmount} |
+        Total: {sale.totalAmount}
       </div>
     </div>
-
-    <!-- ACTIONS -->
-    <div class="actions">
-      <button type="button" onclick={handleInvoiceClick}>Factura</button>
-      <button type="button" onclick={handleTicketClick}>Ticket</button>
+    <div>
+      <IconButton size="2x" icon={faFilePdf} label="Factura" onclick={handleInvoiceClick} />
+      <IconButton size="2x" icon={faReceipt} label="Ticket" onclick={handleTicketClick} />
     </div>
   </div>
-
-  <!-- SECCIÓN DETALLE (PLEGABLE) -->
   {#if expanded}
     <div class="sale-items">
-      <ul>
         {#each sale.items as item}
-          <li>
-            {item.productName} ·
-            Cant: {item.quantity} ·
-            SubTotal: ${item.subTotal}
-          </li>
+          <div class="item-details">
+            <div>
+              <div class="item-name">
+                <span>{item.quantity}</span> - 
+                <span>{item.productName}</span>
+              </div>
+              <div>c/u {item.price.toFixed(2)}</div>
+            </div>
+            <div>
+              <div>Monto:</div>
+              <div>{(item.quantity * item.price).toFixed(2)}</div>
+            </div>
+            {#if item.discount > 0}
+              <div>
+                <div>Descuento ({item.discount}%):</div>
+                <div>-{((item.quantity * item.price) * (item.discount / 100)).toFixed(2)}</div>
+              </div>
+            {/if}
+            <div>
+              <div>Subtotal:</div>
+              <div>{calculateSubtotal(item).toFixed(2)}</div>
+            </div>
+          </div>
         {/each}
-      </ul>
     </div>
   {/if}
 </div>
@@ -92,45 +99,28 @@
     gap: 10px;
   }
 
-  .toggle {
-    background: none;
-    border: none;
-    font-size: 14px;
-    cursor: pointer;
-    margin-top: 4px;
-  }
+  .summary { flex: 1; }
 
-  .summary {
-    flex: 1;
-  }
-
-  .title {
-    font-weight: bold;
-  }
-
-  .subtitle {
-    font-size: 0.85em;
-    color: #555;
-  }
+  .title { font-weight: bold; }
 
   .detail {
     font-size: 0.85em;
     color: #444;
   }
 
-  .actions {
+  .item-details {
     display: flex;
-    gap: 6px;
+    flex: 1;
+    flex-direction: column;
+    padding: 0.5em 1.5em;
   }
 
-  .sale-items {
-    margin-top: 8px;
-    padding-left: 24px;
+  .item-details > div {
+    display: flex;
+    justify-content: space-between;
   }
 
-  ul {
-    margin: 0;
-    padding-left: 16px;
-    list-style: disc;
+  .item-name {
+    font-style: italic;
   }
 </style>

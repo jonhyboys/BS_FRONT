@@ -5,8 +5,10 @@ function createCartStore() {
 
   return {
     subscribe,
-    addItem: (item, forceNewLine = false) =>
+    addItem: (item, forceNewLine = false) => {
       update((items) => {
+        console.log('Cart addItem called with:', item, 'forceNewLine:', forceNewLine, 'current items:', items);
+        
         // Si forceNewLine es true, siempre agregar una nueva línea
         if (forceNewLine) {
           return [
@@ -50,7 +52,8 @@ function createCartStore() {
             iva: item.iva
           }
         ];
-      }),
+      });
+    },
     updateItem: (itemId, updates) =>
       update((items) =>
         items.map((item) => (item.id === itemId ? { ...item, ...updates } : item))

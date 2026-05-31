@@ -13,6 +13,15 @@ export async function getSalesByDate(date) {
   return await res.json();
 }
 
+export async function getSalesRange(fromDate, toDate) {
+  // Convertir las fechas a ISO string (date-time format)
+  const from = new Date(fromDate).toISOString();
+  const to = new Date(toDate).toISOString();
+  const res = await fetch(`${BASE_URL}/range?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
+  if (!res.ok) throw new Error('Error al obtener ventas del rango');
+  return await res.json();
+}
+
 export async function createSale(sale) {
   const res = await fetch(BASE_URL, {
     method: 'POST',
