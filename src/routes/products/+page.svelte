@@ -22,14 +22,11 @@
   let loading = $state(false);
   let error = $state(null);
   let searchTimeout;
+  let isOpen = $state(false);
 
-  // =======================
-  // LOAD PRODUCTS
-  // =======================
   async function loadProducts() {
     loading = true;
     error = null;
-
     try {
       const data = await getProducts(1);
       productos = data.map(p => ({
@@ -43,23 +40,16 @@
 
   loadProducts();
 
-  // =======================
-  // SEARCH
-  // =======================
   function handleSearch(value) {
     search = value;
     clearTimeout(searchTimeout);
-
     searchTimeout = setTimeout(async () => {
       const cleaned = value.trim().replace(/[^a-zA-Z0-9]/g, '');
-
       if (cleaned.length === 0) {
         loadProducts();
         return;
       }
-
       if (cleaned.length < 3) return;
-
       loading = true;
       try {
         const data = await searchProducts(value, 1);
@@ -73,9 +63,6 @@
     }, 200);
   }
 
-  // =======================
-  // ACTIONS
-  // =======================
   function nuevo() {
     errores = {};
     productoSeleccionado = {
@@ -88,6 +75,7 @@
       quantity: 0,
       iva: 21
     };
+    isOpen = true;
   }
 
   function editar(producto) {
@@ -103,11 +91,13 @@
       quantity: producto.quantity,
       iva: producto.iva
     };
+     isOpen = true;
   }
 
   function cerrarModal() {
     productoSeleccionado = null;
     errores = {};
+    isOpen = false;
   }
 
   function validar(p) {
@@ -122,8 +112,6 @@
     const e = validar(productoSeleccionado);
     errores = e;
     if (Object.keys(e).length > 0) return;
-
-    // Construir objeto con solo los campos que espera el backend
     const productoParaEnviar = {
       id: productoSeleccionado.id,
       code: productoSeleccionado.code,
@@ -136,12 +124,8 @@
       iva: Number(productoSeleccionado.iva) ?? 0
     };
 
-    if (productoSeleccionado.id) {
-      await updateProduct(productoParaEnviar);
-    } else {
-      await createProduct(productoParaEnviar);
-    }
-
+    if (productoSeleccionado.id) { await updateProduct(productoParaEnviar); }
+    else { await createProduct(productoParaEnviar);}
     cerrarModal();
     loadProducts();
   }
@@ -194,7 +178,7 @@
     title={productoSeleccionado.id ? 'Editar producto' : 'Nuevo producto'}
     onSave={guardar}
     onCancel={cerrarModal}
-    actionsAlign="right"
+    bind:isOpen={isOpen}
   >
     <ProductForm
       key={productoSeleccionado.id ?? 'new'}

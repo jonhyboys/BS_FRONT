@@ -1,87 +1,53 @@
 <script>
+  import IconButton from "$lib/button/IconButton.svelte";
+  import { faRectangleXmark, faFloppyDisk } from '@fortawesome/free-solid-svg-icons';
+
   const {
     title,
     onSave,
     onCancel,
-    onDelete,
-    actionsAlign = 'right'
+    isOpen = $bindable(false),
+    children
   } = $props();
 </script>
 
-<div class="overlay">
-  <div class="modal">
-    <h2>{title}</h2>
-
-    <div class="content">
-      <slot />
-    </div>
-
-    <div
-      class="actions"
-      class:align-right={actionsAlign === 'right'}
-    >
-      {#if onSave}
-        <button type="button" onclick={onSave}>
-          Guardar
-        </button>
-      {/if}
-
-      {#if onDelete}
-        <button
-          type="button"
-          class="danger"
-          onclick={onDelete}
-        >
-          Eliminar
-        </button>
-      {/if}
-
-      <button type="button" onclick={onCancel}>
-        Cancelar
-      </button>
+{#if isOpen}
+  <div class="modal-overlay">
+    <div class="modal">
+      <h2>{title}</h2>
+      {@render children()}
+      <div class="actions">
+        <IconButton size="2x" icon={faRectangleXmark} label="Cancelar" onclick={onCancel} />
+        <IconButton size="2x" icon={faFloppyDisk} label="Guardar" onclick={onSave} />
+      </div>
     </div>
   </div>
-</div>
+{/if}
 
 <style>
-  .overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    display: flex;
+   .modal-overlay {
     align-items: center;
+    background: #0003;
+    display: flex;
+    inset: 0;
     justify-content: center;
-    z-index: 1000;
+    position: fixed;
+    z-index: 10;
   }
 
   .modal {
-    background: white;
-    padding: 16px;
-    border-radius: 4px;
-    min-width: 320px;
-    max-width: 600px;
-  }
-
-  .content {
-    margin: 16px 0;
+    background: #FFF;
+    box-shadow: 0 4px 16px #000;
+    display: flex;
+    flex-direction: column;
+    max-width: 50%;
+    padding: 1em;
   }
 
   .actions {
     display: flex;
-    gap: 8px;
-  }
-
-  .actions.align-right {
-    justify-content: flex-end;
-  }
-
-  button {
-    padding: 6px 10px;
-  }
-
-  .danger {
-    background: #c0392b;
-    color: white;
-    border: none;
+    gap: 1em;
+    justify-content: space-between;
+    margin-top: 1em;
   }
 </style>

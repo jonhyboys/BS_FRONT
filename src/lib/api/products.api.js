@@ -45,7 +45,7 @@ export async function updateProduct(product) {
     id: product.id,
     code: product.code,
     name: product.name,
-    category: product.categoryId,
+    category: product.category,
     cost: product.cost,
     price: product.price,
     promotion: product.promotion,
