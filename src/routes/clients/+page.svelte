@@ -139,7 +139,6 @@
   {#each clientes as cliente}
     <Item>
       <div slot="image">👤</div>
-
       <div slot="content">
         <div class="title">{cliente.name}</div>
         <div class="subtitle">{cliente.nif}</div>
@@ -148,10 +147,9 @@
           Dir: {cliente.address}
         </div>
       </div>
-
       <div slot="actions" class="button-container">
-        <IconButton icon={faEdit} label="Editar" onclick={() => editar(cliente)} variant="primary" />
-        <IconButton icon={faTrash} label="Eliminar" onclick={() => eliminar(cliente)} variant="danger" />
+        <IconButton icon={faEdit} size="2x" label="Editar" onclick={() => editar(cliente)} />
+        <IconButton icon={faTrash} size="2x" label="Eliminar" onclick={() => eliminar(cliente)} />
       </div>
     </Item>
   {/each}
