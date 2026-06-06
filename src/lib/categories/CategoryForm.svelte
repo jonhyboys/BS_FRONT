@@ -8,7 +8,6 @@
 
   $effect(() => {
     if (!category) return;
-
     form.name = category.name ?? '';
     form.motherCategoryId =
       category.motherCategoryId != null
@@ -28,17 +27,14 @@
   }
 </script>
 
-<div class="form">
-  <label>
-    Nombre
-    <input bind:value={form.name} oninput={emitirCambios} />
-    {#if errors.name}
-      <span class="error">{errors.name}</span>
-    {/if}
-  </label>
-
-  <label>
-    Categoría padre
+<div class="body">
+  <div class="form-group">
+    <label for="name">Nombre</label>
+    <input name="name" type="text" bind:value={form.name} oninput={emitirCambios} />
+    {#if errors.name}<span class="error">{errors.name}</span>{/if}
+  </div>
+  <div class="form-group">
+    <label for="nif">Categoría padre</label>
     <select bind:value={form.motherCategoryId} onchange={emitirCambios}>
       <option value="">— Sin categoría padre —</option>
       {#each categories as c}
@@ -47,18 +43,20 @@
         {/if}
       {/each}
     </select>
-  </label>
+  </div>
 </div>
 
 <style>
-  .form {
+ .body { margin: 1em 0; }
+
+  .form-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    padding: 0.5em 0;
+    width: 20em;
   }
 
-  .error {
-    color: red;
-    font-size: 0.8em;
-  }
+  .form-group label { font-weight: 600; }
+
+  .form-group input { padding: 0.5em; }
 </style>

@@ -21,6 +21,7 @@
   let loading = $state(false);
   let error = $state(null);
   let searchTimeout;
+  let isOpen = $state(false);
 
   async function loadCategories() {
     loading = true;
@@ -56,16 +57,19 @@
       name: '',
       motherCategoryId: null
     };
+    isOpen = true;
   }
 
   function editar(categoria) {
     errores = {};
     categoriaSeleccionada = { ...categoria };
+    isOpen = true;
   }
 
   function cerrarModal() {
     categoriaSeleccionada = null;
     errores = {};
+    isOpen = false;
   }
 
   function validarCategoria(c) {
@@ -134,7 +138,7 @@
     title={categoriaSeleccionada.id ? 'Editar categoría' : 'Nueva categoría'}
     onSave={guardar}
     onCancel={cerrarModal}
-    actionsAlign="right"
+    isOpen={isOpen}
   >
     <CategoryForm
       key={categoriaSeleccionada.id ?? 'new'}
