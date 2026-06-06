@@ -12,18 +12,11 @@
 <div class="page-header">
   <h1>{title}</h1>
   {#if children}
-    <div class="center-content">
-      {@render children()}
-    </div>
+    <div class="center-content">{@render children()}</div>
   {/if}
   {#if buttonLabel}
-    <div class="button">
-      <IconButton
-        icon={faFileCirclePlus}
-        label={buttonLabel}
-        size="3x"
-        onclick={buttonOnClick}
-      />
+    <div>
+      <IconButton icon={faFileCirclePlus} label={buttonLabel} size="3x" onclick={buttonOnClick} />
     </div>
   {/if}
 </div>
@@ -37,20 +30,5 @@
     margin-bottom: 2em;
   }
 
-  h1 {
-    margin: 0;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .center-content {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-  }
-
-  .page-header .button {
-    font-size: 2em;
-    flex-shrink: 0;
-  }
+  .center-content { flex: 1; }
 </style>

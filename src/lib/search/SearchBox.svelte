@@ -25,8 +25,7 @@
   }
   input {
     box-sizing: border-box;
-    margin: 1em;
-    max-width: 40em;
+    max-width: 60em;
     padding: 1em;
     width: 100%;
   }
