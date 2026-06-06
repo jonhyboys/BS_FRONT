@@ -5,6 +5,7 @@
   import SearchBox from '$lib/search/SearchBox.svelte';
   import IconButton from '$lib/button/IconButton.svelte';
   import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+  import PageTitle from '$lib/page/PageTitle.svelte';
   import {
     getClients,
     searchClientsByName,
@@ -12,7 +13,6 @@
     updateClient,
     deleteClient
   } from '$lib/api/clients.api.js';
-  import PageTitle from '$lib/page/PageTitle.svelte';
 
   let clientes = $state([]);
   let clienteSeleccionado = $state(null);
@@ -21,52 +21,33 @@
   let loading = $state(false);
   let error = $state(null);
   let searchTimeout;
+  let isOpen = $state(false);
 
-  // =======================
-  // LOAD CLIENTS
-  // =======================
   async function loadClients() {
     loading = true;
     error = null;
-
-    try {
-      clientes = await getClients();
-    } finally {
-      loading = false;
-    }
+    try { clientes = await getClients(); }
+    finally { loading = false; }
   }
 
   loadClients();
 
-  // =======================
-  // SEARCH
-  // =======================
   function handleSearch(value) {
     search = value;
     clearTimeout(searchTimeout);
-
     searchTimeout = setTimeout(async () => {
       const cleaned = value.trim().replace(/[^a-zA-Z0-9]/g, '');
-
       if (cleaned.length === 0) {
         loadClients();
         return;
       }
-
       if (cleaned.length < 3) return;
-
       loading = true;
-      try {
-        clientes = await searchClientsByName(value);
-      } finally {
-        loading = false;
-      }
+      try { clientes = await searchClientsByName(value); }
+      finally { loading = false; }
     }, 200);
   }
 
-  // =======================
-  // ACTIONS
-  // =======================
   function nuevo() {
     errores = {};
     clienteSeleccionado = {
@@ -75,16 +56,19 @@
       phone: '',
       address: ''
     };
+    isOpen = true;
   }
 
   function editar(cliente) {
     errores = {};
     clienteSeleccionado = { ...cliente };
+    isOpen = true;
   }
 
   function cerrarModal() {
     clienteSeleccionado = null;
     errores = {};
+    isOpen = false;
   }
 
   function validarCliente(c) {
@@ -97,15 +81,9 @@
   async function guardar() {
     const e = validarCliente(clienteSeleccionado);
     errores = e;
-
     if (Object.keys(e).length > 0) return;
-
-    if (clienteSeleccionado.id) {
-      await updateClient(clienteSeleccionado);
-    } else {
-      await createClient(clienteSeleccionado);
-    }
-
+    if (clienteSeleccionado.id) { await updateClient(clienteSeleccionado); }
+    else { await createClient(clienteSeleccionado); }
     cerrarModal();
     loadClients();
   }
@@ -160,7 +138,7 @@
     title={clienteSeleccionado.id ? 'Editar cliente' : 'Nuevo cliente'}
     onSave={guardar}
     onCancel={cerrarModal}
-    actionsAlign="right"
+    bind:isOpen={isOpen}
   >
     <ClientForm
       key={clienteSeleccionado.id ?? 'new'}
