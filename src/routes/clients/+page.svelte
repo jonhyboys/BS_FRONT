@@ -183,12 +183,12 @@
     margin-bottom: 1em;
   }
   .subtitle {
-    font-size: 0.85em;
     color: #666;
+    font-size: 0.85em;
   }
   .detail {
-    font-size: 0.85em;
     color: #444;
+    font-size: 0.85em;
   }
 
   .error { color: red; }
