@@ -6,24 +6,16 @@
   let { sale, onTicket, onInvoice } = $props();
   let expanded = $state(false);
 
-  function toggle() {
-    expanded = !expanded;
-  }
+  function toggle() { expanded = !expanded; }
 
-  function formatDate(date) {
-    return new Date(date).toLocaleString();
-  }
+  function formatDate(date) { return new Date(date).toLocaleString(); }
 
   function handleTicketClick() {
-    if (onTicket) {
-      onTicket(sale);
-    }
+    if (onTicket) { onTicket(sale); }
   }
 
   function handleInvoiceClick() {
-    if (onInvoice) {
-      onInvoice(sale);
-    }
+    if (onInvoice) { onInvoice(sale); }
   }
 
   function calculateSubtotal(item) {
@@ -50,7 +42,7 @@
       </div>
     </div>
     <div>
-      <IconButton size="2x" icon={faFilePdf} label="Factura" onclick={handleInvoiceClick} />
+      <IconButton size="2x" icon={faFilePdf} label="Factura" onclick={handleInvoiceClick} disabled={sale.invoice === 0} />
       <IconButton size="2x" icon={faReceipt} label="Ticket" onclick={handleTicketClick} />
     </div>
   </div>

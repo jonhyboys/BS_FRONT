@@ -5,13 +5,14 @@
     icon,
     label = '',
     size = '1x',
-    onclick
+    onclick,
+    disabled = false
   } = $props();
 </script>
 
 
 <button
-  class="icon-button"
+  class="icon-button{disabled ? ' disabled' : ''}"
   aria-label={label}
   title={label}
   onclick={onclick}
@@ -23,7 +24,7 @@
 .icon-button {
     background: transparent;
     border: none;
-    color: #AAA;
+    color: #919191;
     cursor: pointer;
     padding: .5em;
 }
@@ -31,4 +32,5 @@
    background: #D0D0D0;
    color: #333;
 }
+.icon-button.disabled { color: #DFDFDF; }
 </style>

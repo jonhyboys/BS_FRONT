@@ -30,29 +30,22 @@
   onMount(loadSales);
 
   async function handleCloseDay() {
-    if (sales.length === 0) return;
-
-    if (!confirm('¿Deseas cerrar el día? Se incluirán todas las ventas pendientes.')) {
-      return;
-    }
-
+    if (sales.length === 0) { return; }
+    if (!confirm('¿Deseas cerrar el día? Se incluirán todas las ventas pendientes.')) { return; }
     try {
       const ids = sales.map(s => s.id);
       await createClousure(ids);
       sales = [];
-    } catch (err) {
-      alert(err.message);
-    }
+    } 
+    catch (err) { alert(err.message); }
   }
 
   async function handleSaleComplete() {
-    const cartItems = cart.getCartData();
-    
+    const cartItems = cart.getCartData();    
     if (cartItems.length === 0) {
       alert('El carrito está vacío');
       return;
     }
-
     try {
       const items = cartItems.map(i => ({
         product: i.productId,
@@ -64,8 +57,6 @@
       }));
 
       await createSale({ items });
-
-      // Actualizar inventario de cada producto
       for (const item of cartItems) {
         try {
           const product = await getProductById(item.productId);
@@ -81,9 +72,8 @@
 
       cart.clear();
       await loadSales();
-    } catch (err) {
-      alert(err.message);
     }
+    catch (err) { alert(err.message); }
   }
 </script>
 

@@ -2,8 +2,9 @@
   import SaleRow from './SaleRow.svelte';
   import TicketModal from './TicketModal.svelte';
   import InvoiceGenerator from './InvoiceGenerator.svelte';
-  import InvoiceClientModal from '$lib/invoices/InvoiceClientModal.svelte';
+  import InvoiceClientForm from '$lib/invoices/InvoiceClientForm.svelte';
   import { getInvoiceBySaleId, createInvoice } from '$lib/api/invoices.api.js';
+  import AppModal from '$lib/modal/AppModal.svelte';
 
   let { 
     sales = [], 
@@ -23,23 +24,26 @@
 
   async function handleInvoiceClick(sale) {
     try {
-      // Verificar si ya existe una factura para esta venta
-      const existingInvoice = await getInvoiceBySaleId(sale.id);
-      
-      if (existingInvoice) {
-        // Si existe factura, generar PDF directamente
-        invoiceSale = {
-          ...sale,
-          client: existingInvoice.client
-        };
-      } else {
-        // Si no existe, abrir modal para seleccionar cliente
-        invoiceSalePending = sale;
-        isInvoiceModalOpen = true;
+      if(sale.invoice === 0) {
+        let confirm = window.confirm('Esta venta no tiene factura asociada, ¿quiere generar una?');
+        if (confirm){
+          invoiceSalePending = sale;
+          isInvoiceModalOpen = true;
+        } 
+        else { return; }
       }
-    } catch (err) {
-      alert(err.message);
-    }
+      else {
+        const existingInvoice = await getInvoiceBySaleId(sale.id);      
+        if (existingInvoice) {
+          invoiceSale = {
+            ...sale,
+            client: existingInvoice.client
+          };
+        } else {
+          alert('No se encontró la factura para esta venta. Comuniquese con soporte.');
+        }
+      }      
+    } catch (err) { alert(err.message); }
   }
 
   async function handleInvoiceClientSelected(client) {
@@ -49,14 +53,13 @@
         sales: [invoiceSalePending.id]
       });
 
-      // Pasamos la venta (con cliente) al generador
       invoiceSale = {
         ...invoiceSalePending,
         client
       };
-    } catch (err) {
-      alert(err.message);
-    } finally {
+    }
+    catch (err) { alert(err.message); }
+    finally {
       isInvoiceModalOpen = false;
       invoiceSalePending = null;
     }
@@ -98,11 +101,16 @@
   bind:isOpen={isTicketModalOpen}
   bind:sale={selectedSale}
 />
-<InvoiceClientModal
-  isOpen={isInvoiceModalOpen}
-  onSelect={handleInvoiceClientSelected}
+
+<AppModal
+  title="Seleccionar cliente"
   onCancel={cancelInvoice}
-/>
+  onSave={() => handleInvoiceClientSelected(invoiceSalePending.client)}
+  bind:isOpen={isInvoiceModalOpen}
+>
+  <InvoiceClientForm />  
+</AppModal>
+
 {#if invoiceSale}
   <InvoiceGenerator bind:sale={invoiceSale} />
 {/if}
@@ -110,9 +118,7 @@
 <style>
   .sales { margin: 0 1em;}
 
-  .sales-list {
-    margin-top: 1em;
-  }
+  .sales-list { margin-top: 1em; }
 
   .sales-summary {
     display: flex;
