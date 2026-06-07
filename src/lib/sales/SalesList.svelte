@@ -36,14 +36,15 @@
         const existingInvoice = await getInvoiceBySaleId(sale.id);      
         if (existingInvoice) {
           invoiceSale = {
-            ...sale,
-            client: existingInvoice.client
+            ...existingInvoice[0].sales[0],
+            client: existingInvoice[0].client
           };
         } else {
           alert('No se encontró la factura para esta venta. Comuniquese con soporte.');
         }
       }      
-    } catch (err) { alert(err.message); }
+    }
+    catch (err) { alert(err.message); }
   }
 
   async function handleInvoiceClientSelected(client) {
@@ -60,6 +61,7 @@
     }
     catch (err) { alert(err.message); }
     finally {
+      sales[sales.findIndex(s => s.id === invoiceSalePending.id)].invoice = 1;
       isInvoiceModalOpen = false;
       invoiceSalePending = null;
     }
@@ -68,6 +70,10 @@
   function cancelInvoice() {
     isInvoiceModalOpen = false;
     invoiceSalePending = null;
+  }
+
+  function reset() {
+    invoiceSale = null;
   }
 </script>
 
@@ -105,14 +111,15 @@
 <AppModal
   title="Seleccionar cliente"
   onCancel={cancelInvoice}
-  onSave={() => handleInvoiceClientSelected(invoiceSalePending.client)}
   bind:isOpen={isInvoiceModalOpen}
 >
-  <InvoiceClientForm />  
+  <InvoiceClientForm
+    onSelect={handleInvoiceClientSelected}
+  />  
 </AppModal>
 
 {#if invoiceSale}
-  <InvoiceGenerator bind:sale={invoiceSale} />
+  <InvoiceGenerator bind:sale={invoiceSale} onGenerate={reset} />
 {/if}
 
 <style>

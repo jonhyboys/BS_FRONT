@@ -18,7 +18,9 @@
       {@render children()}
       <div class="actions">
         <IconButton size="2x" icon={faRectangleXmark} label="Cancelar" onclick={onCancel} />
-        <IconButton size="2x" icon={faFloppyDisk} label="Guardar" onclick={onSave} />
+        {#if onSave}
+          <IconButton size="2x" icon={faFloppyDisk} label="Guardar" onclick={onSave} />
+        {/if}
       </div>
     </div>
   </div>

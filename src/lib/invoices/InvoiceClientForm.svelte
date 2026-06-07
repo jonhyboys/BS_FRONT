@@ -1,19 +1,15 @@
 <script>
-  import AppModal from '$lib/modal/AppModal.svelte';
   import Item from '$lib/list/Item.svelte';
   import SearchBox from '$lib/search/SearchBox.svelte';
   import { searchClientsByName } from '$lib/api/clients.api.js';
+  import IconButton from "$lib/button/IconButton.svelte";
+  import { faSquareCheck } from '@fortawesome/free-solid-svg-icons';
 
-  let { isOpen, onSelect, onCancel } = $props();
+  let { onSelect } = $props();
   let clients = $state([]);
   let search = $state('');
   let loading = $state(false);
   let searchTimeout;
-
-  function reset() {
-    clients = [];
-    search = '';
-  }
 
   function handleSearch(value) {
     search = value;
@@ -31,8 +27,6 @@
       finally { loading = false; }
     }, 200);
   }
-  
-  $effect(() => { if (!isOpen) { reset(); } });
 </script>
 
 
@@ -45,6 +39,9 @@
   {#if loading}
     <p>Cargando clientes…</p>
   {/if}
+  {#if clients.length === 0}
+    <p>Use el buscador para encontrar clientes.</p>
+  {/if}
   {#each clients as client}
     <Item>
       <div slot="image">👤</div>
@@ -56,28 +53,20 @@
         </div>
       </div>
       <div slot="actions">
-        <button onclick={() => onSelect(client)}>Seleccionar</button>
+        <IconButton icon={faSquareCheck} label="Seleccionar" sixe="2x" onclick={() => onSelect(client)} />
       </div>
     </Item>
   {/each}
 </div>
 
 <style>
- .body { margin: 1em 0; }
+ .body { 
+  margin: 1em 0;
+  min-width: 45em;
+}
 
-  .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1em;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    padding: 0.5em 0;
-  }
-
-  .form-group label { font-weight: 600; }
-
-  .form-group input { padding: 0.5em; }
+ p {
+    text-align: center;
+    margin: 2em;
+ }
 </style>

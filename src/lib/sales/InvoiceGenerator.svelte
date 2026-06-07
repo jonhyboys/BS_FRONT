@@ -1,13 +1,11 @@
 <script>
   import { onMount } from 'svelte';
 
-  let { sale = $bindable(null) } = $props();
-
+  let { sale = $bindable(null), onGenerate = $bindable(null) } = $props();
   let isGenerating = $state(false);
 
   async function generatePDF() {
     if (!sale) return;
-
     isGenerating = true;
 
     try {
@@ -51,10 +49,10 @@
       // Limpiar
       document.body.removeChild(invoiceElement);
     } catch (err) {
-      console.error('Error generating PDF:', err);
       alert('Error al generar la factura: ' + err.message);
     } finally {
       isGenerating = false;
+      onGenerate && onGenerate();
     }
   }
 
