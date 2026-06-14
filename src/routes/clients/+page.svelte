@@ -3,8 +3,9 @@
   import AppModal from '$lib/modal/AppModal.svelte';
   import ClientForm from '$lib/clients/ClientForm.svelte';
   import SearchBox from '$lib/search/SearchBox.svelte';
+  import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
   import IconButton from '$lib/button/IconButton.svelte';
-  import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+  import { faEdit, faTrash, faUserTag } from '@fortawesome/free-solid-svg-icons';
   import PageTitle from '$lib/page/PageTitle.svelte';
   import {
     getClients,
@@ -104,19 +105,18 @@
     />
   {/snippet}
 </PageTitle>
-
 {#if loading}
   <p>Cargando clientes…</p>
 {/if}
-
 {#if error}
   <p class="error">{error}</p>
 {/if}
-
 <div class="item-container">
   {#each clientes as cliente}
     <Item>
-      <div slot="image">👤</div>
+      <div slot="image">
+        <FontAwesomeIcon icon={faUserTag} />
+      </div>
       <div slot="content">
         <div class="title">{cliente.name}</div>
         <div class="subtitle">{cliente.nif}</div>
@@ -158,16 +158,15 @@
 
   .title {
     font-weight: bold;
-    margin-bottom: 1em;
-  }
-  .subtitle {
+    font-size: 1.2em;
+ }
+
+ .detail {
     color: #666;
-    font-size: 0.85em;
-  }
-  .detail {
-    color: #444;
-    font-size: 0.85em;
-  }
+    font-size: 0.8em;
+    font-style: italic;
+    margin-top: 0.8em;
+ }
 
   .error { color: red; }
 

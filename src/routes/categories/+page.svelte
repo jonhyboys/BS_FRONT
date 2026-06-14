@@ -5,7 +5,8 @@
   import SearchBox from '$lib/search/SearchBox.svelte';
   import IconButton from '$lib/button/IconButton.svelte';
   import PageTitle from '$lib/page/PageTitle.svelte';
-  import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+  import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+  import { faEdit, faTrash, faFolderTree } from '@fortawesome/free-solid-svg-icons';
   import {
     getCategories,
     searchCategoriesByName,
@@ -95,7 +96,13 @@
     await deleteCategory(categoria.id);
     loadCategories();
   }
-</script>
+
+  function getNombreCategoriaMadre(id) {
+    if (!id) return '—';
+    const madre = categorias.find(c => c.id === id);
+    return madre?.name ?? '—';
+  }
+  </script>
 
 <PageTitle title="Categorías" buttonLabel="Nueva categoría" buttonOnClick={nuevo}>
   {#snippet children()}
@@ -106,23 +113,20 @@
     />
   {/snippet}
 </PageTitle>
-
-{#if loading}
-  <p>Cargando categorías…</p>
-{/if}
-
-{#if error}
-  <p class="error">{error}</p>
-{/if}
-
+{#if loading}<p>Cargando categorías…</p>{/if}
+{#if error}<p class="error">{error}</p>{/if}
 <div class="item-container">
   {#each categorias as categoria}
     <Item>
-      <div slot="image">📂</div>
+      <div slot="image">
+        <FontAwesomeIcon icon={faFolderTree} />
+      </div>
       <div slot="content">
         <div class="title">{categoria.name}</div>
         <div class="detail">
-          Categoría padre: {categoria.motherCategoryName ?? '—'}
+          {#if categoria.motherCategory > 0}
+            Categoría madre: {getNombreCategoriaMadre(categoria.motherCategory)}
+          {/if}
         </div>
       </div>
       <div slot="actions" class="button-container">
