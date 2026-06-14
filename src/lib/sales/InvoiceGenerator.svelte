@@ -4,298 +4,315 @@
   let { sale = $bindable(null), onGenerate = $bindable(null) } = $props();
   let isGenerating = $state(false);
 
+  // Helpers
+  const euro = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+  const pad2 = (n) => n.toString().padStart(2, '0');
+
+  function fmtDate(isoDate) {
+    if (!isoDate) return '';
+    let d;
+    
+    // Si es un string, intentar parsearlo
+    if (typeof isoDate === 'string') {
+      d = new Date(isoDate);
+    } 
+    // Si es un Date object, usarlo directamente
+    else if (isoDate instanceof Date) {
+      d = isoDate;
+    } 
+    // Si es un número (timestamp), usarlo
+    else if (typeof isoDate === 'number') {
+      d = new Date(isoDate);
+    } 
+    // Default
+    else {
+      return '';
+    }
+
+    // Validar que la fecha sea válida
+    if (isNaN(d.getTime())) return '';
+    
+    return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
+  }
+
+  function round2(n) {
+    return Math.round((n + Number.EPSILON) * 100) / 100;
+  }
+
+  // Carga la imagen
+  async function loadImage(src) {
+    if (!src) return null;
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  // Dibuja la marca de agua en la página actual
+  function drawWatermark(doc, img, pageIndex, watermark, pageW, pageH) {
+    const firstPage = pageIndex === 1;
+    const canDraw =
+      (firstPage && watermark.showOnFirstPage) ||
+      (!firstPage && watermark.showOnOtherPages);
+    if (!img || !canDraw) return;
+
+    // Intentar opacidad
+    let gOn = false;
+    if (doc.GState && doc.setGState) {
+      try {
+        doc.setGState(new doc.GState({ opacity: watermark.opacity }));
+        gOn = true;
+      } catch {
+        /* fallback sin opacidad */
+      }
+    }
+
+    // Mantener proporción
+    const imgWpx = img.naturalWidth || img.width;
+    const imgHpx = img.naturalHeight || img.height;
+    if (!imgWpx || !imgHpx) return;
+
+    const imgRatio = imgWpx / imgHpx;
+    let drawW, drawH;
+
+    if (watermark.mode === 'cover') {
+      const pageRatio = pageW / pageH;
+      if (imgRatio > pageRatio) {
+        drawH = pageH;
+        drawW = drawH * imgRatio;
+      } else {
+        drawW = pageW;
+        drawH = drawW / imgRatio;
+      }
+    } else {
+      drawW = pageW * (watermark.scale ?? 0.6);
+      drawH = drawW / imgRatio;
+    }
+
+    const x = (pageW - drawW) / 2;
+    const y = (pageH - drawH) / 2;
+
+    // Rotación opcional
+    if (watermark.rotate) {
+      doc.saveGraphicsState?.();
+      doc.rotate?.(watermark.rotate, { origin: [pageW / 2, pageH / 2] });
+      doc.addImage(img, 'PNG', x, y, drawW, drawH, undefined, 'FAST');
+      doc.restoreGraphicsState?.();
+    } else {
+      doc.addImage(img, 'PNG', x, y, drawW, drawH, undefined, 'FAST');
+    }
+
+    // Restablecer opacidad
+    if (gOn) {
+      doc.setGState(new doc.GState({ opacity: 1 }));
+    }
+  }
+
   async function generatePDF() {
     if (!sale) return;
     isGenerating = true;
 
+    console.log('Sale data:', sale);
+    console.log('Sale date:', sale.date, 'Type:', typeof sale.date);
+
     try {
       // Importar las librerías dinámicamente
-      const jsPDF = (await import('jspdf')).jsPDF;
-      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf');
+      const autotable = (await import('jspdf-autotable')).default;
 
-      // Crear elemento temporal con el contenido de la factura
-      const invoiceElement = document.createElement('div');
-      invoiceElement.innerHTML = getInvoiceHTML();
-      invoiceElement.style.position = 'absolute';
-      invoiceElement.style.left = '-9999px';
-      invoiceElement.style.width = '210mm';
-      invoiceElement.style.backgroundColor = 'white';
-      document.body.appendChild(invoiceElement);
+      // Datos de la empresa
+      const company = {
+        name: 'Librería Genil',
+        nif: '15401323V',
+        address: 'Av. María Auxiliadora 5, bajo, 14700, Córdoba',
+        contact: 'libreriagenil@gmail.com | +34 957 646 013'
+      };
 
-      // Convertir HTML a canvas
-      const canvas = await html2canvas(invoiceElement, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true
+      // Crear documento
+      const doc = new jsPDF({ unit: 'mm', format: 'a4', putOnlyUsedFonts: true });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const lm = 14,
+        rm = 14,
+        top = 15,
+        rightX = pageW - rm;
+
+      // Configurar marca de agua
+      const watermark = {
+        src: '/Genil.png',
+        opacity: 0.05,
+        scale: 0.6,
+        rotate: 0,
+        showOnFirstPage: true,
+        showOnOtherPages: true,
+        mode: 'center'
+      };
+
+      // Cargar imágenes
+      const headerImg = await loadImage('/Genil.png');
+      const wmImage = watermark.src ? await loadImage(watermark.src) : null;
+
+      // Encabezado (logo sin opacidad)
+      let y = top + 8;
+      if (headerImg) {
+        const targetH = 10;
+        const ratio = (headerImg.width || 1) / (headerImg.height || 1);
+        const targetW = targetH * ratio;
+
+        doc.addImage(headerImg, 'PNG', lm, top - 2, targetW, targetH, undefined, 'FAST');
+
+        // Separador
+        doc.setDrawColor(210, 210, 210);
+        doc.setLineWidth(0.4);
+        doc.line(lm, top - 2 + targetH + 2, pageW - rm, top - 2 + targetH + 2);
+
+        y = top - 2 + targetH + 10;
+      }
+
+      // Marca de agua en la primera página
+      drawWatermark(doc, wmImage, 1, watermark, pageW, pageH);
+
+      // Encabezados de factura
+      doc.setFontSize(16);
+      doc.setFont(undefined, 'bold');
+      doc.text(`Factura #${sale.id ?? ''}`, lm, y);
+
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.text(`Fecha: ${fmtDate(sale.date)}`, rightX, y, { align: 'right' });
+
+      // Emisor
+      y += 8;
+      if (company && (company.name || company.nif || company.address || company.contact)) {
+        doc.setFont(undefined, 'bold');
+        doc.text('Emisor', lm, y);
+        doc.setFont(undefined, 'normal');
+        const emitterLines = [
+          company.name || '',
+          company.nif ? `NIF: ${company.nif}` : '',
+          company.address || '',
+          company.contact || ''
+        ].filter(Boolean);
+        emitterLines.forEach((line, i) => doc.text(line, lm, y + 5 + i * 5));
+      }
+
+      // Cliente
+      const clientX = pageW / 2;
+      doc.setFont(undefined, 'bold');
+      doc.text('Destinatario', clientX, y);
+      doc.setFont(undefined, 'normal');
+      const clientLines = [
+        `${sale.client?.name ?? ''}`,
+        sale.client?.nif ? `NIF: ${sale.client.nif}` : '',
+        `${sale.client?.address ?? ''}`.trim(),
+        sale.client?.email ? `${sale.client.email}` : ''
+      ].filter(Boolean);
+      clientLines.forEach((line, i) => doc.text(line, clientX, y + 5 + i * 5));
+
+      const emitterBlockH =
+        company && (company.name || company.nif || company.address || company.contact)
+          ? 5 + 5 * Math.max(1, (company.name ? 1 : 0) + (company.nif ? 1 : 0) + (company.address ? 1 : 0) + (company.contact ? 1 : 0))
+          : 10;
+      const clientBlockH = 5 + 5 * Math.max(1, clientLines.length);
+      y = Math.max(y + emitterBlockH, y + clientBlockH) + 4;
+
+      // Tabla de productos
+      const tableHead = [['Cant.', 'Producto', 'Base', 'Desc.', 'IVA', 'Subtotal']];
+
+      let totalBase = 0,
+        totalIva = 0,
+        totalDiscount = 0,
+        totalPayed = 0;
+
+      const tableBody = (sale.items || []).map((p) => {
+        const iva = 21;
+        const qty = Number(p.quantity ?? 0);
+        const discount = Number(p.discount ?? 0);
+        const price = Number(p.price ?? 0);
+        const priceBeforeDiscount = round2(qty * price);
+        const discountAmount = priceBeforeDiscount * (discount / 100);
+        const priceAfterDiscount = priceBeforeDiscount - discountAmount;
+        const priceBase = round2(priceAfterDiscount / (iva / 100 + 1));
+        const ivaAmount = priceAfterDiscount - priceBase;
+
+        totalBase += priceBase;
+        totalIva += ivaAmount;
+        totalDiscount += discountAmount;
+        totalPayed += priceAfterDiscount;
+
+        return [
+          qty,
+          String(p.productName ?? ''),
+          euro.format(priceBase),
+          `${euro.format(discountAmount)} (${discount}%)`,
+          `${euro.format(ivaAmount)} (${iva}%)`,
+          euro.format(priceBeforeDiscount)
+        ];
       });
 
-      // Crear PDF
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
+      totalBase = round2(totalBase);
+      totalIva = round2(totalIva);
+      totalDiscount = round2(totalDiscount);
+      totalPayed = round2(totalPayed);
+
+      autotable(doc, {
+        startY: y,
+        head: tableHead,
+        body: tableBody,
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [245, 245, 245], textColor: [0, 0, 0] },
+        theme: 'grid',
+        columnStyles: {
+          0: { halign: 'right', cellWidth: 12 },
+          1: { cellWidth: 80 },
+          2: { halign: 'right', cellWidth: 24 },
+          3: { halign: 'right', cellWidth: 24 },
+          4: { halign: 'right', cellWidth: 24 },
+          5: { halign: 'right', cellWidth: 24 }
+        },
+        bodyStyles: { valign: 'middle' },
+        didDrawPage: () => {
+          const info = doc.internal.getCurrentPageInfo?.();
+          const pageNumber = info?.pageNumber ?? 1;
+          drawWatermark(doc, wmImage, pageNumber, watermark, pageW, pageH);
+        }
       });
 
-      const imgData = canvas.toDataURL('image/png');
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const endY = doc.lastAutoTable.finalY || y;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      // Totales
+      const totalsY = endY + 8;
+      doc.setFont(undefined, 'bold');
+      doc.text('Base imponible:', rightX - 40, totalsY, { align: 'right' });
+      doc.text(euro.format(totalBase), rightX, totalsY, { align: 'right' });
 
-      // Abrir en nueva pestaña
-      const pdfUrl = pdf.output('bloburi');
-      window.open(pdfUrl, '_blank');
+      doc.text('IVA:', rightX - 40, totalsY + 6, { align: 'right' });
+      doc.text(euro.format(totalIva), rightX, totalsY + 6, { align: 'right' });
 
-      // Limpiar
-      document.body.removeChild(invoiceElement);
+      doc.text('Descuento:', rightX - 40, totalsY + 12, { align: 'right' });
+      doc.text(euro.format(totalDiscount), rightX, totalsY + 12, { align: 'right' });
+
+      doc.setFontSize(12);
+      doc.text('TOTAL:', rightX - 40, totalsY + 20, { align: 'right' });
+      doc.text(euro.format(totalPayed), rightX, totalsY + 20, { align: 'right' });
+      doc.setFontSize(10);
+
+      // Salida
+      const blob = doc.output('blob');
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
     } catch (err) {
       alert('Error al generar la factura: ' + err.message);
+      console.error(err);
     } finally {
       isGenerating = false;
       onGenerate && onGenerate();
     }
   }
 
-  function getInvoiceHTML() {
-    return `
-      <div class="invoice-container">
-        <style>
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
-          
-          body {
-            font-family: Arial, sans-serif;
-            color: #333;
-          }
-          
-          .invoice-container {
-            width: 210mm;
-            height: 297mm;
-            padding: 20mm;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 595 842"><rect fill="white" width="595" height="842"/></svg>');
-            position: relative;
-            overflow: hidden;
-          }
-          
-          .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 15px;
-          }
-          
-          .logo-section {
-            flex: 1;
-          }
-          
-          .logo {
-            width: 80px;
-            height: auto;
-          }
-          
-          .title-section {
-            flex: 1;
-            text-align: right;
-          }
-          
-          .title-section h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-            color: #007bff;
-          }
-          
-          .title-section p {
-            font-size: 12px;
-            color: #666;
-          }
-          
-          .info-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-          }
-          
-          .info-block h3 {
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            color: #333;
-          }
-          
-          .info-block p {
-            font-size: 11px;
-            line-height: 1.6;
-            color: #555;
-            margin: 3px 0;
-          }
-          
-          .table-section {
-            margin-bottom: 30px;
-          }
-          
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 11px;
-          }
-          
-          thead {
-            background-color: #f0f0f0;
-            border-top: 1px solid #ddd;
-            border-bottom: 2px solid #007bff;
-          }
-          
-          th {
-            padding: 10px;
-            text-align: left;
-            font-weight: bold;
-            color: #333;
-          }
-          
-          td {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-          }
-          
-          tr:last-child td {
-            border-bottom: 2px solid #ddd;
-          }
-          
-          .text-right {
-            text-align: right;
-          }
-          
-          .totals-section {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 30px;
-          }
-          
-          .totals {
-            width: 250px;
-          }
-          
-          .total-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            font-size: 12px;
-            border-bottom: 1px solid #eee;
-          }
-          
-          .total-row.final {
-            border-bottom: 2px solid #007bff;
-            border-top: 2px solid #007bff;
-            font-weight: bold;
-            font-size: 14px;
-            padding: 12px 0;
-            color: #007bff;
-          }
-          
-          .footer {
-            text-align: center;
-            font-size: 10px;
-            color: #999;
-            margin-top: 30px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
-          }
-        </style>
-        
-        <div class="header">
-          <div class="logo-section">
-            <div style="font-weight: bold; font-size: 16px; color: #007bff;">GENIL</div>
-            <div style="font-size: 12px; color: #666;">PAPELERÍA - LIBRERÍA</div>
-          </div>
-          <div class="title-section">
-            <h1>Factura #${sale.id}</h1>
-            <p>Fecha: ${formatDate(sale.date)}</p>
-          </div>
-        </div>
-        
-        <div class="info-section">
-          <div class="info-block">
-            <h3>Emisor</h3>
-            <p><strong>Librería Genil</strong></p>
-            <p>NIF: 15401323V</p>
-            <p>Av. María Auxiliadora 5, bajo</p>
-            <p>14700, Córdoba</p>
-            <p>libreriagenil@gmail.com | +34 957 646 013</p>
-          </div>
-          <div class="info-block">
-            <h3>Destinatario</h3>
-            <p><strong>${sale.client?.name || 'Cliente'}</strong></p>
-            <p>NIF: ${sale.client?.nif || '-'}</p>
-            <p>Dirección: ${sale.client?.address || '-'}</p>
-          </div>
-        </div>
-        
-        <div class="table-section">
-          <table>
-            <thead>
-              <tr>
-                <th>Cant.</th>
-                <th>Producto</th>
-                <th class="text-right">Base</th>
-                <th class="text-right">Desc.</th>
-                <th class="text-right">IVA</th>
-                <th class="text-right">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${sale.items.map(item => `
-                <tr>
-                  <td>${item.quantity}</td>
-                  <td>${item.productName}</td>
-                  <td class="text-right">${(item.price * item.quantity).toFixed(2)} €</td>
-                  <td class="text-right">${item.discount > 0 ? `${(item.price * item.quantity * (item.discount / 100)).toFixed(2)} € (${item.discount}%)` : '0,00 €'}</td>
-                  <td class="text-right">${(item.ivaAmount || 0).toFixed(2)} € (${item.iva}%)</td>
-                  <td class="text-right">${item.subTotal.toFixed(2)} €</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-        
-        <div class="totals-section">
-          <div class="totals">
-            <div class="total-row">
-              <span>Base imponible:</span>
-              <span>${sale.baseTotalAmount.toFixed(2)} €</span>
-            </div>
-            <div class="total-row">
-              <span>IVA:</span>
-              <span>${sale.ivaAmount.toFixed(2)} €</span>
-            </div>
-            <div class="total-row">
-              <span>Descuento:</span>
-              <span>${sale.baseTotalDiscount.toFixed(2)} €</span>
-            </div>
-            <div class="total-row final">
-              <span>TOTAL:</span>
-              <span>${sale.total.toFixed(2)} €</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="footer">
-          <p>Gracias por su compra</p>
-        </div>
-      </div>
-    `;
-  }
-
-  function formatDate(date) {
-    const d = new Date(date);
-    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-  }
 
   onMount(() => {
     if (sale) {
