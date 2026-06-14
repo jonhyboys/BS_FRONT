@@ -12,7 +12,6 @@
 
 <style>
   .item {
-    align-items: flex-start;
     background: #FFF;
     border: 1px solid #DADADA;
     display: flex;
@@ -30,5 +29,16 @@
     width: 80px;
   }
 
-  .content { flex: 1;}
+  .content {
+    display: flex; 
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .actions {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+  }
 </style>

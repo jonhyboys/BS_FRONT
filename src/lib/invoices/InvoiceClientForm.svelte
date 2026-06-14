@@ -2,8 +2,9 @@
   import Item from '$lib/list/Item.svelte';
   import SearchBox from '$lib/search/SearchBox.svelte';
   import { searchClientsByName } from '$lib/api/clients.api.js';
+  import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
   import IconButton from "$lib/button/IconButton.svelte";
-  import { faSquareCheck } from '@fortawesome/free-solid-svg-icons';
+  import { faSquareCheck, faUserTag } from '@fortawesome/free-solid-svg-icons';
 
   let { onSelect } = $props();
   let clients = $state([]);
@@ -44,16 +45,16 @@
   {/if}
   {#each clients as client}
     <Item>
-      <div slot="image">👤</div>
+      <div slot="image">
+        <FontAwesomeIcon icon={faUserTag} />
+      </div>
       <div slot="content">
         <div class="title">{client.name}</div>
         <div class="subtitle">{client.nif}</div>
-        <div class="detail">
-          Tel: {client.phone} | Dir: {client.address}
-        </div>
+        <div class="detail">{client.phone} | {client.address}</div>
       </div>
       <div slot="actions">
-        <IconButton icon={faSquareCheck} label="Seleccionar" sixe="2x" onclick={() => onSelect(client)} />
+        <IconButton icon={faSquareCheck} label="Seleccionar" size="2x" onclick={() => onSelect(client)} />
       </div>
     </Item>
   {/each}
@@ -61,12 +62,24 @@
 
 <style>
  .body { 
-  margin: 1em 0;
-  min-width: 45em;
-}
+    margin: 1em 0;
+    min-width: 30em;
+  }
 
  p {
     text-align: center;
     margin: 2em;
+ }
+
+ .title {
+    font-weight: bold;
+    font-size: 1.2em;
+ }
+
+ .detail {
+    color: #666;
+    font-size: 0.8em;
+    font-style: italic;
+    margin-top: 0.8em;
  }
 </style>
