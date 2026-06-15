@@ -1,14 +1,15 @@
-const BASE_URL = 'http://localhost:5123/api/Sales';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const ENDPOINT = 'Sales';
 
 export async function getSales(page = 1) {
-  const res = await fetch(`${BASE_URL}?page=${page}`);
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}?page=${page}`);
   if (!res.ok) throw new Error('Error al obtener ventas');
   return await res.json();
 }
 
 export async function getSalesByDate(date) {
   const dateStr = date.toISOString().split('T')[0];
-  const res = await fetch(`${BASE_URL}/date?date=${dateStr}`);
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/date?date=${dateStr}`);
   if (!res.ok) throw new Error('Error al obtener ventas del día');
   return await res.json();
 }
@@ -17,13 +18,13 @@ export async function getSalesRange(fromDate, toDate) {
   // Convertir las fechas a ISO string (date-time format)
   const from = new Date(fromDate).toISOString();
   const to = new Date(toDate).toISOString();
-  const res = await fetch(`${BASE_URL}/range?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/range?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
   if (!res.ok) throw new Error('Error al obtener ventas del rango');
   return await res.json();
 }
 
 export async function createSale(sale) {
-  const res = await fetch(BASE_URL, {
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -36,7 +37,7 @@ export async function createSale(sale) {
 }
 
 export async function updateSale(sale) {
-  const res = await fetch(`${BASE_URL}/${sale.id}`, {
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/${sale.id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json'
@@ -57,7 +58,7 @@ export async function deleteSale(id) {
 }
 
 export async function getPendingSales() {
-  const res = await fetch(`${BASE_URL}/pending-clousure`);
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/pending-clousure`);
   if (!res.ok) throw new Error('Error al obtener ventas pendientes');
   return await res.json();
 }

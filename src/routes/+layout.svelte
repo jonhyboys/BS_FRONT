@@ -1,12 +1,13 @@
 <script>
   import { afterNavigate } from '$app/navigation';
+  import '../app.css';
 
   const { children } = $props();
 </script>
 
 <header>
   <div class="brand">
-    <img src="/src/img/Genil.png" alt="Logo" />
+    <img src="Genil.png" alt="Logo" />
   </div>
   <nav>
     <ul class="menu">

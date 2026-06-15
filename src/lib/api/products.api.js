@@ -1,32 +1,33 @@
-const BASE_URL = 'http://localhost:5123/api/Products';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const ENDPOINT = 'Products';
 
 export async function getProducts(page = 1) {
-  const res = await fetch(`${BASE_URL}?page=${page}`);
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}?page=${page}`);
   if (!res.ok) throw new Error('Error al obtener productos');
   return await res.json();
 }
 
 export async function getProductById(id) {
-  const res = await fetch(`${BASE_URL}/${id}`);
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/${id}`);
   if (!res.ok) throw new Error('Error al obtener producto');
   return await res.json();
 }
 
 export async function getProductByCode(code) {
-  const res = await fetch(`${BASE_URL}/code/${code}`);
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/code/${code}`);
   if (!res.ok) throw new Error('Error al obtener producto');
   return await res.json();
 }
 
 export async function searchProducts(query, page = 1) {
   const encoded = encodeURIComponent(query);
-  const res = await fetch(`${BASE_URL}/query/${encoded}?page=${page}`);
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/query/${encoded}?page=${page}`);
   if (!res.ok) throw new Error('Error al buscar productos');
   return await res.json();
 }
 
 export async function createProduct(product) {
-  const res = await fetch(BASE_URL, {
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

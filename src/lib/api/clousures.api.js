@@ -1,7 +1,8 @@
-const BASE_URL = 'http://localhost:5123/api/Clousures';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const ENDPOINT = 'Clousures';
 
 export async function createClousure(saleIds) {
-  const res = await fetch(BASE_URL, {
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

@@ -1,10 +1,11 @@
-const BASE_URL = 'http://localhost:5123/api/Categories';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const ENDPOINT = 'Categories';
 
 // =======================
 // GET ALL
 // =======================
 export async function getCategories() {
-  const res = await fetch(BASE_URL);
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}`);
   if (!res.ok) throw new Error('Error al obtener categorías');
   return await res.json();
 }
@@ -14,7 +15,7 @@ export async function getCategories() {
 // =======================
 export async function searchCategoriesByName(name) {
   const encoded = encodeURIComponent(name);
-  const res = await fetch(`${BASE_URL}/search/name/${encoded}`);
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/search/name/${encoded}`);
   if (!res.ok) throw new Error('Error al buscar categorías');
   return await res.json();
 }
@@ -23,7 +24,7 @@ export async function searchCategoriesByName(name) {
 // CREATE
 // =======================
 export async function createCategory(category) {
-  const res = await fetch(BASE_URL, {
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(category)
@@ -36,7 +37,7 @@ export async function createCategory(category) {
 // UPDATE
 // =======================
 export async function updateCategory(category) {
-  const res = await fetch(`${BASE_URL}/${category.id}`, {
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/${category.id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(category)

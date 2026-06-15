@@ -1,7 +1,8 @@
-const BASE_URL = 'http://localhost:5123/api/Invoices';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const ENDPOINT = 'Invoices';
 
 export async function getInvoiceBySaleId(saleId) {
-  const res = await fetch(`${BASE_URL}/sale/${saleId}`);
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/sale/${saleId}`);
   
   if (res.status === 404) {
     return null;
@@ -15,7 +16,7 @@ export async function getInvoiceBySaleId(saleId) {
 }
 
 export async function createInvoice({ client, sales }) {
-  const res = await fetch(BASE_URL, {
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
