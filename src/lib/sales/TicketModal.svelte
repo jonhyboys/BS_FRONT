@@ -142,6 +142,10 @@
     justify-content: space-between;
   }
 
+  .item-name + div {
+    white-space: nowrap;
+  }
+
   .footer {
     font-size: 0.8em;
     margin-top: 3em;

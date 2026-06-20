@@ -40,8 +40,6 @@ export async function createProduct(product) {
 }
 
 export async function updateProduct(product) {
-  
-  // Limpiar el objeto para enviar solo los campos que espera el backend
   const cleanProduct = {
     id: product.id,
     code: product.code,
@@ -54,7 +52,7 @@ export async function updateProduct(product) {
     iva: product.iva
   };
   
-  const res = await fetch(`${BASE_URL}/${cleanProduct.id}`, {
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/${cleanProduct.id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json'
@@ -62,12 +60,12 @@ export async function updateProduct(product) {
     body: JSON.stringify(cleanProduct)
   });
 
-  if (!res.ok) throw new Error('Error al actualizar producto');
+  if (!res.ok) { throw new Error('Error al actualizar producto'); }
   return await res.json();
 }
 
 export async function deleteProduct(id) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/${id}`, {
     method: 'DELETE'
   });
 

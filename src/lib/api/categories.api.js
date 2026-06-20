@@ -37,10 +37,15 @@ export async function createCategory(category) {
 // UPDATE
 // =======================
 export async function updateCategory(category) {
+  const cleanedCategory = {
+    id: category.id,
+    name: category.name,
+    motherCategory: category.motherCategoryId  
+  };
   const res = await fetch(`${BASE_URL}/${ENDPOINT}/${category.id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(category)
+    body: JSON.stringify(cleanedCategory)
   });
   if (!res.ok) throw new Error('Error al actualizar categoría');
   return await res.json();
@@ -50,7 +55,7 @@ export async function updateCategory(category) {
 // DELETE
 // =======================
 export async function deleteCategory(id) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/${id}`, {
     method: 'DELETE'
   });
   if (!res.ok) throw new Error('Error al eliminar categoría');

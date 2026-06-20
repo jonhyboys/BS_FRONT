@@ -12,6 +12,7 @@
 
 <style>
   .item {
+    align-items: center;
     background: #FFF;
     border: 1px solid #DADADA;
     display: flex;

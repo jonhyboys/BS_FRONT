@@ -56,7 +56,7 @@ export async function updateClient(client) {
 // DELETE
 // =======================
 export async function deleteClient(id) {
-  const res = await fetch(`${BASE_URL}/${id}`, {
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/${id}`, {
     method: 'DELETE'
   });
 
