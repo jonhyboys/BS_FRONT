@@ -18,3 +18,11 @@ export async function createClousure(saleIds) {
 
   return await res.json();
 }
+
+export async function getClousuresRange(fromDate, toDate) {
+  const from = new Date(fromDate).toISOString();
+  const to = new Date(toDate).toISOString();
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/range?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
+  if (!res.ok) throw new Error('Error al obtener cierres del rango');
+  return await res.json();
+}

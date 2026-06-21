@@ -62,3 +62,9 @@ export async function getPendingSales() {
   if (!res.ok) throw new Error('Error al obtener ventas pendientes');
   return await res.json();
 }
+
+export async function getSalesByClousure(clousureId) {
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/clousure/${clousureId}`);
+  if (!res.ok) throw new Error('Error al obtener ventas del cierre');
+  return await res.json();
+}

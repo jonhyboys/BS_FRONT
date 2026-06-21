@@ -16,7 +16,7 @@
       <li><a href="/clients">Clientes</a></li>
       <li><a href="/categories">Categorías</a></li>
       <li><a href="/selling">Vender</a></li>
-      <li><a href="/invoices">Facturas</a></li>
+      <li><a href="/sales">Ventas</a></li>
       <li><a href="/clousures">Cierres</a></li>
     </ul>
   </nav>
