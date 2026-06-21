@@ -34,7 +34,7 @@
     form.iva = product.iva ?? 21;
   });
 
-  function emitirCambios() {
+  function trigger_change() {
     const cambios = {
       id: product?.id,
       code: form.code,
@@ -53,13 +53,13 @@
 <div class="body">
   <div class="form-group">
     <label for="name">Nombre</label>
-    <input name="name" type="text" bind:value={form.name} oninput={emitirCambios} />
+    <input name="name" type="text" bind:value={form.name} oninput={trigger_change} />
     {#if errors.name}<span class="error">{errors.name}</span>{/if}
   </div>
   <div class="form-row">
     <div class="form-group">
       <label for="code">Código</label>
-      <input name="code" type="text" bind:value={form.code} oninput={emitirCambios} />
+      <input name="code" type="text" bind:value={form.code} oninput={trigger_change} />
       {#if errors.code}<span class="error">{errors.code}</span>{/if}
     </div>
     <div class="form-group">
@@ -67,7 +67,7 @@
         {#if loading}
           <p>Cargando categorías…</p>
         {:else}
-          <select bind:value={form.category} onchange={emitirCambios}>
+          <select bind:value={form.category} onchange={trigger_change}>
             <option value="">Seleccione una categoría</option>
             {#each categories as c}
               <option value={String(c.id)}>{c.name}</option>
@@ -81,38 +81,38 @@
   <div class="form-row">
     <div class="form-group">
       <label for="cost">Costo</label>
-      <input name="cost" type="number" bind:value={form.cost} min="0" step="0.01" oninput={emitirCambios} />
+      <input name="cost" type="number" bind:value={form.cost} min="0" step="0.01" oninput={trigger_change} />
       {#if errors.cost}<span class="error">{errors.cost}</span>{/if}
     </div>
     <div class="form-group">
       <label for="price">Precio</label>
-      <input name="price" type="number" bind:value={form.price} min="0" step="0.01" oninput={emitirCambios} />
+      <input name="price" type="number" bind:value={form.price} min="0" step="0.01" oninput={trigger_change} />
       {#if errors.price}<span class="error">{errors.price}</span>{/if}
     </div>
   </div>
   <div class="form-row">
     <div class="form-group">
       <label for="quantity">Cantidad</label>
-      <input name="quantity" type="number" bind:value={form.quantity} min="1" step="1" oninput={emitirCambios} />
+      <input name="quantity" type="number" bind:value={form.quantity} min="1" step="1" oninput={trigger_change} />
       {#if errors.quantity}<span class="error">{errors.quantity}</span>{/if}
     </div>
     <div class="form-group">
       <label for="promotion">Promoción (%)</label>
-      <input name="promotion" type="number" bind:value={form.promotion} min="0" step="0.01" oninput={emitirCambios} />
+      <input name="promotion" type="number" bind:value={form.promotion} min="0" step="0.01" oninput={trigger_change} />
       {#if errors.promotion}<span class="error">{errors.promotion}</span>{/if}
     </div>
   </div>
   <div class="form-row">
     <div class="form-group">
       <label for="iva">IVA (%)</label>
-      <input name="iva" type="number" bind:value={form.iva} min="0" max="100" step="1" oninput={emitirCambios} />
+      <input name="iva" type="number" bind:value={form.iva} min="0" max="100" step="1" oninput={trigger_change} />
       {#if errors.iva}<span class="error">{errors.iva}</span>{/if}
     </div>
   </div>
 </div>
 
 <style>
- .body { margin: 1em 0; }
+  .body { margin: 1em 0; }
 
   .form-row {
     display: grid;
@@ -129,4 +129,9 @@
   .form-group label { font-weight: 600; }
 
   .form-group input { padding: 0.5em; }
+
+  .error {
+    color: red;
+    font-size: 0.7em;
+  }
 </style>

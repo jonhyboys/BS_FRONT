@@ -7,6 +7,7 @@
   import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
   import { faEdit, faTrash, faCoins, faTag, faBoxesStacked, faGift } from '@fortawesome/free-solid-svg-icons';
   import PageTitle from '$lib/page/PageTitle.svelte';
+  import Pagination from '$lib/pagination/Pagination.svelte';
   import {
     getProducts,
     searchProducts,
@@ -22,23 +23,27 @@
   let loading = $state(false);
   let error = $state(null);
   let searchTimeout;
-  let isOpen = $state(false);
+  let isOpen = $state(false);  
+  let page = $state(1);
+  let pageSize = $state(10);
+  let total = $state(0);
+
+  $effect(() => {
+    loadProducts();
+  });
 
   async function loadProducts() {
     loading = true;
     error = null;
     try {
-      const data = await getProducts(1);
-      productos = data.map(p => ({
+      const data = await getProducts(page, pageSize);
+      productos = data.items.map(p => ({
         ...p,
         category: p.categoryId
       }));
-    } finally {
-      loading = false;
-    }
+      total = data.total;
+    } finally { loading = false; }
   }
-
-  loadProducts();
 
   function handleSearch(value) {
     search = value;
@@ -49,21 +54,20 @@
         loadProducts();
         return;
       }
-      if (cleaned.length < 3) return;
+      if (cleaned.length < 3) { return; }
       loading = true;
       try {
-        const data = await searchProducts(value, 1);
-        productos = data.map(p => ({
+        const data = await searchProducts(value, page, pageSize);
+        productos = data.items.map(p => ({
           ...p,
           category: p.categoryId
         }));
-      } finally {
-        loading = false;
-      }
+        total = data.total;
+      } finally { loading = false; }
     }, 200);
   }
 
-  function nuevo() {
+  function handle_new_product() {
     errores = {};
     productoSeleccionado = {
       code: '',
@@ -78,7 +82,7 @@
     isOpen = true;
   }
 
-  function editar(producto) {
+  function handle_edit_product(producto) {
     errores = {};
     productoSeleccionado = {
       id: producto.id,
@@ -94,22 +98,8 @@
      isOpen = true;
   }
 
-  function cerrarModal() {
-    productoSeleccionado = null;
-    errores = {};
-    isOpen = false;
-  }
-
-  function validar(p) {
-    const e = {};
-    if (!p.code?.trim()) e.code = 'El código es obligatorio';
-    if (!p.name?.trim()) e.name = 'El nombre es obligatorio';
-    if (!p.category) e.category = 'Debe seleccionar una categoría';
-    return e;
-  }
-
-  async function guardar() {
-    const e = validar(productoSeleccionado);
+  async function handle_save_product() {
+    const e = validate_product(productoSeleccionado);
     errores = e;
     if (Object.keys(e).length > 0) return;
     const productoParaEnviar = {
@@ -123,21 +113,41 @@
       quantity: Number(productoSeleccionado.quantity) ?? 0,
       iva: Number(productoSeleccionado.iva) ?? 0
     };
-
     if (productoSeleccionado.id) { await updateProduct(productoParaEnviar); }
     else { await createProduct(productoParaEnviar);}
-    cerrarModal();
+    handle_close_modal();
     loadProducts();
   }
 
-  async function eliminar(producto) {
-    if (!confirm('¿Eliminar este producto?')) return;
+  async function handle_delete_product(producto) {
+    if (!confirm('¿Realmente desea eliminar este producto?')) { return; }
     await deleteProduct(producto.id);
+    loadProducts();
+  }
+
+  function handle_close_modal() {
+    productoSeleccionado = null;
+    errores = {};
+    isOpen = false;
+  }
+
+  function validate_product(p) {
+    const e = {};
+    if (!p.code?.trim()) { e.code = 'El código es obligatorio'; }
+    if (!p.name?.trim()) { e.name = 'El nombre es obligatorio'; }
+    if (!p.category) { e.category = 'Debe seleccionar una categoría'; }
+    return e;
+  }
+
+  function handlePageChange(e) {
+    const { page: newPage, pageSize: newPageSize } = e.detail;
+    page = newPage;
+    pageSize = newPageSize;
     loadProducts();
   }
 </script>
 
-<PageTitle title="Productos" buttonLabel="Nuevo producto" buttonOnClick={nuevo}>
+<PageTitle title="Productos" buttonLabel="Nuevo producto" buttonOnClick={handle_new_product}>
   {#snippet children()}
     <SearchBox
       value={search}
@@ -147,12 +157,16 @@
   {/snippet}
 </PageTitle>
 
-{#if loading}
-  <p>Cargando productos…</p>
-{/if}
-{#if error}
-  <p class="error">{error}</p>
-{/if}
+
+<Pagination
+  {page}
+  {pageSize}
+  {total}
+  on:change={handlePageChange}
+/>
+
+{#if loading}<p>Cargando productos…</p>{/if}
+{#if error}<p class="error">{error}</p>{/if}
 <div class="item-container">
   {#each productos as producto}
     <Item>
@@ -167,8 +181,8 @@
         </div>
       </div>
       <div slot="actions" class="button-container">
-        <IconButton size="2x" icon={faEdit} label="Editar" onclick={() => editar(producto)} />
-        <IconButton size="2x" icon={faTrash} label="Eliminar" onclick={() => eliminar(producto)} />
+        <IconButton size="2x" icon={faEdit} label="Editar" onclick={() => handle_edit_product(producto)} />
+        <IconButton size="2x" icon={faTrash} label="Eliminar" onclick={() => handle_delete_product(producto)} />
       </div>
     </Item>
   {/each}
@@ -176,8 +190,8 @@
 {#if productoSeleccionado}
   <AppModal
     title={productoSeleccionado.id ? 'Editar producto' : 'Nuevo producto'}
-    onSave={guardar}
-    onCancel={cerrarModal}
+    onSave={handle_save_product}
+    onCancel={handle_close_modal}
     bind:isOpen={isOpen}
   >
     <ProductForm
@@ -209,8 +223,6 @@
   .detail { color: #444; }
 
   .detail > span { margin-right: 1em; }
-
-  .error { color: red; }
 
   .button-container {
     display: flex;

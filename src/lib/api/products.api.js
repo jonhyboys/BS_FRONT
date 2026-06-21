@@ -1,8 +1,8 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const ENDPOINT = 'Products';
 
-export async function getProducts(page = 1) {
-  const res = await fetch(`${BASE_URL}/${ENDPOINT}?page=${page}`);
+export async function getProducts(page = 1, pageSize = 10) {
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}?page=${page}&pageSize=${pageSize}`);
   if (!res.ok) throw new Error('Error al obtener productos');
   return await res.json();
 }
@@ -19,9 +19,9 @@ export async function getProductByCode(code) {
   return await res.json();
 }
 
-export async function searchProducts(query, page = 1) {
+export async function searchProducts(query, page = 1, pageSize = 10) {
   const encoded = encodeURIComponent(query);
-  const res = await fetch(`${BASE_URL}/${ENDPOINT}/query/${encoded}?page=${page}`);
+  const res = await fetch(`${BASE_URL}/${ENDPOINT}/query/${encoded}?page=${page}&pageSize=${pageSize}`);
   if (!res.ok) throw new Error('Error al buscar productos');
   return await res.json();
 }
