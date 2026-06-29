@@ -7,50 +7,53 @@
 
   const dispatch = createEventDispatcher();
   const pageSizes = [10, 25, 50, 100];
-  const delta = 2;
 
   $: totalPages = Math.ceil(total / pageSize) || 1;
   $: pages = getPages(page, totalPages);
 
-  function getPages(currentPage, totalPages) {
-    const result = [];
-    const start = Math.max(1, currentPage - delta);
-    const end = Math.min(totalPages, currentPage + delta);
-
-    if (totalPages <= 1) { return [1]; }
-    if (start > 1) { result.push(1); }
-    if (start > 2) { result.push('...'); }
-    for (let i = start; i <= end; i++) { result.push(i); }
-    if (end < totalPages - 1) { result.push('...'); }
-    if (end < totalPages) { result.push(totalPages); }
-    return result;
+function getPages(currentPage, totalPages) {
+  const maxItems = 11;
+  if (totalPages <= maxItems) {
+    return Array.from(
+      { length: totalPages },
+      (_, i) => i + 1
+    );
+  }
+  const pages = [];
+  if (currentPage <= 6) {
+    for (let i = 1; i <= 9; i++) { pages.push(i); }
+    pages.push('...');
+    pages.push(totalPages);
+    return pages;
+  }
+  if (currentPage >= totalPages - 5) {
+    pages.push(1);
+    pages.push('...');
+    for (let i = totalPages - 8; i <= totalPages; i++) { pages.push(i); }
+    return pages;
+  }
+  pages.push(1);
+  pages.push('...');
+  for (let i = currentPage - 3; i <= currentPage + 3; i++) { pages.push(i); }
+  pages.push('...');
+  pages.push(totalPages);
+  return pages;
 }
 
-  function changePage(p) {
-    if (p === '...' || p === page) { return; }
-    dispatch('change', { page: p, pageSize });
-  }
+  function changePage(p) { if (p !== page) { dispatch('change', { page: p, pageSize }); } }
 
   function changePageSize(e) {
     const size = Number(e.target.value);
     dispatch('change', { page: 1, pageSize: size });
   }
 
-  function goFirst() {
-    if (page > 1) { changePage(1); }
-  }
+  function goFirst() { if (page > 1) { changePage(1); } }
 
-  function goPrev() {
-    if (page > 1) { changePage(page - 1); }
-  }
+  function goPrev() { if (page > 1) { changePage(page - 1); } }
 
-  function goNext() {
-    if (page < totalPages) { changePage(page + 1); }
-  }
+  function goNext() { if (page < totalPages) { changePage(page + 1); } }
 
-  function goLast() {
-    if (page < totalPages) { changePage(totalPages); }
-  }
+  function goLast() { if (page < totalPages) { changePage(totalPages); } }
 </script>
 
 <div class="pagination">
@@ -88,14 +91,14 @@
   }
 
   .controls {
-    display: flex;
     align-items: center;
+    display: flex;
     gap: .25em;
   }
 
   button {
-    padding: .3em .6em;
     cursor: pointer;
+    padding: .3em .6em;
   }
 
   button.selected {
@@ -104,11 +107,7 @@
     font-weight: bold;
   }
 
-  .dots {
-    padding: 0 .5em;
-  }
+  .dots { padding: 0 .5em; }
 
-  .size select {
-    padding: .3em;
-  }
+  .size select { padding: .3em; }
 </style>
