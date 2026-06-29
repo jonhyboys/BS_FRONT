@@ -58,5 +58,5 @@
 
   .form-group label { font-weight: 600; }
 
-  .form-group input { padding: 0.5em; }
+  .form-group input, .form-group select { padding: 0.5em; }
 </style>

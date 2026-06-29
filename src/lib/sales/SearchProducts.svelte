@@ -67,10 +67,9 @@
       } else {
         // Buscar por query
         const searchResults = await searchProducts(query, 1);
-        results = searchResults;
+        results = searchResults.items;
         
-        // Inicializar valores por defecto para cada producto
-        searchResults.forEach(product => {
+        searchResults.items.forEach(product => {
           if (!selectedQty.hasOwnProperty(product.id)) {
             selectedQty[product.id] = 1;
           }

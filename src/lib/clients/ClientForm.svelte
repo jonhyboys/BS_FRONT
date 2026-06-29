@@ -60,7 +60,7 @@
     width: 20em;
   }
 
-  .form-group.large { width: 40em; }
+  .form-group.large { width: 30em; }
 
   .form-group label { font-weight: 600; }
 

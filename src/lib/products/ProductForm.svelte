@@ -63,11 +63,12 @@
       {#if errors.code}<span class="error">{errors.code}</span>{/if}
     </div>
     <div class="form-group">
-      <label>Categoría
+      <label for="category">Categoría</label>
+      <div>
         {#if loading}
           <p>Cargando categorías…</p>
         {:else}
-          <select bind:value={form.category} onchange={trigger_change}>
+          <select bind:value={form.category} onchange={trigger_change} name="category">
             <option value="">Seleccione una categoría</option>
             {#each categories as c}
               <option value={String(c.id)}>{c.name}</option>
@@ -75,7 +76,7 @@
           </select>
         {/if}
         {#if errors.category}<span class="error">{errors.category}</span>{/if}
-      </label>
+      </div>
     </div>
   </div>
   <div class="form-row">
@@ -128,7 +129,7 @@
 
   .form-group label { font-weight: 600; }
 
-  .form-group input { padding: 0.5em; }
+  .form-group input, .form-group select { padding: 0.5em; }
 
   .error {
     color: red;
